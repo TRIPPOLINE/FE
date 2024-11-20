@@ -38,8 +38,8 @@ const router = createRouter({
       props: true
     },
     {
-      path: '/search',
-      name: 'search',
+      path: '/spot',
+      name: 'spot',
       component: SearchView
     },
     {

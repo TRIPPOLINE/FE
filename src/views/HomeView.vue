@@ -20,7 +20,7 @@
       
       <nav class="flex justify-center space-x-4 mb-6">
         <router-link to="/plan" class="banner-button">여행 계획하기</router-link>
-        <router-link to="/search" class="banner-button">여행지 검색하기</router-link>
+        <router-link to="/spot" class="banner-button">여행지 검색하기</router-link>
         <router-link to="/notice" class="banner-button">공지사항</router-link>
       </nav>
 
