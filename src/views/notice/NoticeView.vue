@@ -1,0 +1,206 @@
+<!-- src/views/NoticeView.vue -->
+<template>
+    <div class="min-h-screen bg-gray-50">
+      <div class="max-w-full px-4 py-8">
+        <!-- 헤더 영역 -->
+        <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
+          <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <h2 class="text-2xl font-bold text-gray-800">공지사항</h2>
+            
+            <!-- 검색 폼 -->
+            <div class="flex flex-wrap gap-2">
+              <select 
+                v-model="searchKey" 
+                class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 w-32"
+              >
+                <option value="">선택</option>
+                <option value="title">제목</option>
+                <option value="content">내용</option>
+                <option value="user_id">작성자</option>
+              </select>
+              
+              <input 
+                v-model="searchWord" 
+                type="text" 
+                placeholder="검색어를 입력하세요"
+                class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 flex-1 min-w-[200px]"
+                @keyup.enter="handleSearch"
+              >
+              
+              <button 
+                @click="handleSearch"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+              >
+                검색
+              </button>
+              
+              <button 
+                @click="resetSearch"
+                class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+              >
+                초기화
+              </button>
+            </div>
+          </div>
+        </div>
+      
+        <!-- 테이블 영역 -->
+        <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-4 text-counter text-sm font-medium text-gray-500 uppercase tracking-wider">제목</th>
+                  <th class="px-6 py-4 text-counter text-sm font-medium text-gray-500 uppercase tracking-wider">내용</th>
+                  <th class="px-3 py-4 text-counter text-sm font-medium text-gray-500 uppercase tracking-wider">작성자</th>
+                  <th class="px-6 py-4 text-counter text-sm font-medium text-gray-500 uppercase tracking-wider">작성일</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+  <tr 
+    v-for="notice in notices" 
+    :key="notice.noticeNo" 
+    class="hover:bg-gray-50 transition-colors cursor-pointer"
+    @click="goToDetail(notice.noticeNo)"
+  >
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ notice.title }}</td>
+    <td class="px-6 py-4 text-sm text-gray-500 max-w-md truncate">{{ notice.contents }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ notice.userId }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(notice.createdAt) }}</td>
+  </tr>
+</tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- 페이지네이션 -->
+        <div v-if="totalPages > 0" class="flex justify-center mt-6 gap-2">
+          <button 
+            v-for="page in totalPages" 
+            :key="page"
+            @click="changePage(page)"
+            class="px-4 py-2 border rounded-md transition-colors"
+            :class="currentPage === page ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 hover:bg-gray-50'"
+          >
+            {{ page }}
+          </button>
+        </div>
+    
+        <!-- 글쓰기 버튼 -->
+        <div class="fixed bottom-8 right-8">
+          <button 
+            @click="goToWritePage"
+            class="px-6 py-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+          >
+            <span>글쓰기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </template>
+  
+  <script setup>
+  import { ref, onMounted, computed, watch } from 'vue';
+  import { useNoticeStore } from '@/stores/noticeStore';
+  import { useRouter } from 'vue-router';
+  
+  const router = useRouter();
+  const noticeStore = useNoticeStore();
+  const searchKey = ref('');
+  const searchWord = ref('');
+  
+  const notices = computed(() => noticeStore.notices);
+  const totalPages = computed(() => Math.ceil(noticeStore.totalCount / noticeStore.sizePerPage));
+  const currentPage = computed(() => noticeStore.currentPage);
+  
+  const handleSearch = async () => {
+    if (!searchKey.value) {
+      alert('검색 기준을 선택해주세요.');
+      return;
+    }
+    noticeStore.setSearchParams({
+      key: searchKey.value,
+      word: searchWord.value
+    });
+    await noticeStore.fetchNotices(1);
+};
+const goToDetail = (noticeNo) => {
+  router.push({ 
+    name: 'NoticeDetail', 
+    params: { noticeNo: noticeNo }
+  });
+};
+
+// 초기화 함수 추가
+const resetSearch = async () => {
+  searchKey.value = '';
+  searchWord.value = '';
+  noticeStore.setSearchParams({
+    key: '',
+    word: ''
+  });
+  await noticeStore.fetchNotices(1);
+};
+// 수정 페이지로 이동하는 함수 추가
+const goToModifyPage = (noticeNo) => {
+  router.push({ 
+    name: 'NoticeModify', 
+    params: { noticeNo: noticeNo }
+  });
+};
+
+// 삭제 처리 함수 추가
+const handleDelete = async (noticeNo) => {
+    if (confirm('정말로 삭제하시겠습니까?')) {
+        try {
+            await noticeStore.deleteNotice(noticeNo);
+            alert('공지사항이 삭제되었습니다.');
+        } catch (error) {
+            alert('삭제 중 오류가 발생했습니다.');
+        }
+    }
+};
+  
+  const changePage = async (page) => {
+    try {
+      await noticeStore.fetchNotices(page);
+    } catch (error) {
+      console.error('페이지 변경 실패:', error);
+      alert('페이지 변경 중 오류가 발생했습니다.');
+    }
+  };
+  
+  const goToWritePage = () => {
+    router.push({ name: 'NoticeWrite' });
+  };
+  
+  onMounted(async () => {
+    try {
+      await noticeStore.fetchNotices(1);
+    } catch (error) {
+      console.error('공지사항 목록 로드 실패:', error);
+      alert('공지사항 목록을 불러오는데 실패했습니다.');
+    }
+  });
+  
+  watch([searchKey, searchWord], () => {
+    noticeStore.setSearchParams({
+      key: searchKey.value,
+      word: searchWord.value
+    });
+  });
+  
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ko-KR');
+  };
+  </script>
+
+<style>
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>
