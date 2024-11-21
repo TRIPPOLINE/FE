@@ -93,20 +93,29 @@
     <div class="flex">
       <!-- 검색 결과 -->
       <div class="bg-white shadow-sm rounded-lg overflow-hidden w-full lg:w-1/3 mr-4 h-[500px] flex flex-col">
-  <div v-if="spots.length > 0" class="flex-grow overflow-y-auto">
-    <div class="grid grid-cols-1 gap-4 p-4">
-      <div v-for="spot in spots" :key="spot.spotId" class="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-    <img :src="spot.imagePath1 || '/placeholder-image.jpg'" :alt="spot.title" class="w-full h-40 object-cover">
-    <div class="p-4">
-      <h3 class="text-lg font-semibold mb-2">{{ spot.title }}</h3>
-      <p class="text-sm text-gray-600">{{ spot.frontAddress }}</p>
-      <button @click="toggleSpotSelection(spot)" class="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
-        {{ isSpotSelected(spot) ? '선택 취소' : '선택하기' }}
-      </button>
+  <!-- 검색 결과 리스트 부분 수정 -->
+<div v-if="spots.length > 0" class="flex-grow overflow-y-auto">
+  <div class="grid grid-cols-1 gap-4 p-4">
+    <div v-for="spot in spots" 
+         :key="spot.spotId" 
+         class="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+         @click="showSpotOnMap(spot)"> 
+         <img 
+  :src="spot.imagePath1 || '../placeholder-image.png'" 
+  :alt="spot.title" 
+  class="w-full h-40 object-cover"
+>
+      <div class="p-4">
+        <h3 class="text-lg font-semibold mb-2">{{ spot.title }}</h3>
+        <p class="text-sm text-gray-600">{{ spot.frontAddress }}</p>
+        <button @click.stop="toggleSpotSelection(spot)" 
+                class="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+          {{ isSpotSelected(spot) ? '선택 취소' : '선택하기' }}
+        </button>
+      </div>
     </div>
   </div>
-    </div>
-  </div>
+</div>
   <!-- 검색 결과 없음 -->
   <div v-if="hasSearched && spots.length === 0" class="p-4 text-center text-gray-500">
     검색 결과가 없습니다.
@@ -234,27 +243,65 @@ export default {
       console.log(selectedSpotType)
     };
 
+  //   const searchSpots = async () => {
+  // if (!selectedSido.value || !selectedSigungu.value) return;
+  // hasSearched.value = true;
+  // const contentTypeId = selectedSpotType.value || null;
+
+  // await spotStore.searchSpots({
+  //   areaCode: selectedSido.value,
+  //   siGunGuCode: selectedSigungu.value,
+  //   contentTypeId: contentTypeId
+  // });
+
+  // spots.value = spotStore.spots;
+
+  // if (map && window.kakao && window.kakao.maps) {
+  //   clearMarkers(); // 기존 마커 제거
+  //   spots.value.forEach(spot => addMarker(spot));
+  //   if (spots.value.length > 0) {
+  //     showSpotOnMap(spots.value[0]);
+  //   }
+  // }
+    //   };
     const searchSpots = async () => {
   if (!selectedSido.value || !selectedSigungu.value) return;
+  
   hasSearched.value = true;
   const contentTypeId = selectedSpotType.value || null;
-
+  
   await spotStore.searchSpots({
     areaCode: selectedSido.value,
     siGunGuCode: selectedSigungu.value,
     contentTypeId: contentTypeId
   });
-
+  
   spots.value = spotStore.spots;
-
+  
   if (map && window.kakao && window.kakao.maps) {
     clearMarkers(); // 기존 마커 제거
-    spots.value.forEach(spot => addMarker(spot));
+    
+    // 검색 결과의 모든 지점을 포함하는 영역 계산
+    const bounds = new window.kakao.maps.LatLngBounds();
+    
+    // 모든 검색 결과에 마커 추가 및 영역 확장
+    spots.value.forEach(spot => {
+      const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
+      bounds.extend(position);
+      addMarker(spot);
+    });
+    
+    // 모든 마커가 보이도록 지도 영역 조정
     if (spots.value.length > 0) {
-      showSpotOnMap(spots.value[0]);
+      map.setBounds(bounds);
+      
+      // 약간의 여유 공간을 위해 줌 레벨 조정
+      const level = map.getLevel();
+      map.setLevel(level + 1);
     }
   }
 };
+    
 
 const resetSearch = () => {
   selectedSido.value = '';
@@ -278,17 +325,52 @@ const clearMarkers = () => {
   markers = [];
 };
 
+// const addMarker = (spot) => {
+//   if (!window.kakao || !window.kakao.maps) return;
+//   const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
+//   const marker = new window.kakao.maps.Marker({
+//     position: position,
+//     map: map
+//   });
+//   markers.push(marker);
+// };
+    
 const addMarker = (spot) => {
   if (!window.kakao || !window.kakao.maps) return;
+  
   const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
+  
+  // 마커 생성
   const marker = new window.kakao.maps.Marker({
     position: position,
     map: map
   });
+  
+  // 정보창 내용 구성
+  const content = `
+    <div class="p-2 bg-white rounded shadow-md">
+      <h3 class="font-bold">${spot.title}</h3>
+      <p class="text-sm text-gray-600">${spot.frontAddress}</p>
+    </div>
+  `;
+  
+  // 정보창 생성
+  const infowindow = new window.kakao.maps.InfoWindow({
+    content: content
+  });
+  
+  // 마우스 오버 시 정보창 표시
+  window.kakao.maps.event.addListener(marker, 'mouseover', function() {
+    infowindow.open(map, marker);
+  });
+  
+  // 마우스 아웃 시 정보창 제거
+  window.kakao.maps.event.addListener(marker, 'mouseout', function() {
+    infowindow.close();
+  });
+  
   markers.push(marker);
 };
-    
-
     const showSpotOnMap = (spot) => {
       if (!window.kakao || !window.kakao.maps) return;
       const moveLatLon = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
@@ -560,6 +642,9 @@ const addAndReturnToPlan = async () => {
         params: { planId: route.query.planId }
       });
     };
+//     const handleImageError = (e) => {
+//   e.target.src = '../placeholder-image.png';
+// };
 
 
     return {
@@ -593,7 +678,9 @@ const addAndReturnToPlan = async () => {
   confirmNewPlan,
   addAndReturnToPlan,
       continuePlan,
-      route
+      route,
+      addMarker
+      //handleImageError
    };
  }
 };
