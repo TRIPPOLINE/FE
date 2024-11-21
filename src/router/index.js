@@ -6,6 +6,7 @@ import HomeView from '@/views/HomeView.vue'
 import UserJoinView from '@/views/UserJoinView.vue'
 import UserLoginView from '@/views/UserLoginView.vue'
 import NoticeWriteView from '../views/notice/NoticeWriteView.vue'
+import PlanView from '@/views/PlanView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -52,6 +53,22 @@ const router = createRouter({
       path: '/user/login',
       name: 'userLogin',
       component: UserLoginView
+    },
+    {
+      path: '/plan/:planId',
+      name: 'PlanView',
+      component: PlanView,
+      props: true
+    },
+    {
+      path: '/search',
+      name: 'SearchView',
+      component: SearchView
+    },
+    {
+      path: '/plan/:planId',
+      name: 'PlanView',
+      component: PlanView
     }
   ]
 })

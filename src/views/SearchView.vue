@@ -127,9 +127,37 @@
     </div>
 
   </div>
-  <button @click="showModal = true" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-  여행 계획 생성하기
-</button>
+  <!-- 조건부 버튼 렌더링 -->
+  <!--<div class="mt-4">-->
+    <!-- 새 계획 생성 버튼 -->
+    <!--<button v-if="!route.query.planId" 
+            @click="showModal = true" 
+            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+      여행 계획 생성하기
+    </button>-->
+    
+    <!-- 계획 계속하기 버튼 -->
+    <!--<button v-else 
+            @click="continuePlan" 
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+      여행 계획 계속하기
+    </button>
+  </div>-->
+  <!-- 조건부 버튼 렌더링 -->
+<div class="mt-4">
+  <!-- 새 계획 생성 버튼 -->
+  <button v-if="!route.query.planId" 
+          @click="showModal = true" 
+          class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+    여행 계획 생성하기
+  </button>
+  <!-- 계획 계속하기 버튼 -->
+  <button v-else 
+          @click="continuePlan" 
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+    선택 완료
+  </button>
+</div>
   <!-- 모달 컴포넌트 -->
   <div v-if="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
   <div class="bg-white p-5 rounded-lg shadow-xl relative">
@@ -158,6 +186,7 @@
 import { ref, onMounted, watch } from 'vue';
 import { useSpotStore } from '@/stores/spotStore';
 import { usePlanStore } from '@/stores/planStore';
+import { useRouter, useRoute } from 'vue-router';
 
 export default {
   name: 'SearchView',
@@ -175,6 +204,7 @@ export default {
     const spotTypes = ref([]);
     const spots = ref([]);
     const mapZoomLevel = ref(13);
+    const route = useRoute();
 
     let map = null;
 
@@ -462,6 +492,32 @@ const cancelNewPlan = () => {
 //     alert('여행 계획 생성 중 오류가 발생했습니다.');
 //   }
     // };
+    const router = useRouter();
+//     const confirmNewPlan = async () => {
+//   if (!newPlanUserId.value || !newPlanTripAt.value) {
+//     alert('사용자 ID와 여행 날짜를 모두 입력해주세요.');
+//     return;
+//   }
+
+//   try {
+//     const planData = {
+//       userId: newPlanUserId.value,
+//       tripAt: newPlanTripAt.value
+//     };
+
+//     const result = await planStore.insertPlan(planData);
+//     showModal.value = false;
+
+//     // planId를 사용하여 PlanView 페이지로 이동
+//     router.push({
+//       name: 'PlanView',
+//       params: { planId: result.planId }
+//     });
+//   } catch (error) {
+//     console.error('여행 계획 생성 실패:', error);
+//     alert('여행 계획 생성 중 오류가 발생했습니다.');
+//   }
+    // };
     const confirmNewPlan = async () => {
   if (!newPlanUserId.value || !newPlanTripAt.value) {
     alert('사용자 ID와 여행 날짜를 모두 입력해주세요.');
@@ -473,19 +529,38 @@ const cancelNewPlan = () => {
       userId: newPlanUserId.value,
       tripAt: newPlanTripAt.value
     };
-
+    
     const result = await planStore.insertPlan(planData);
-    
-    // 생성된 planId 확인
-    console.log('생성된 계획 ID:', planStore.currentPlanId);
-    
     showModal.value = false;
-    alert('새 여행 계획이 생성되었습니다. 계획 ID: ' + planStore.currentPlanId);
+    
+    // PlanView로 이동
+    router.push({
+      name: 'PlanView',
+      params: { planId: result.planId }
+    });
   } catch (error) {
     console.error('여행 계획 생성 실패:', error);
     alert('여행 계획 생성 중 오류가 발생했습니다.');
   }
-};
+    };
+// 기존 여행 계획에 추가하는 경우
+const addAndReturnToPlan = async () => {
+      const planId = route.query.planId;
+      if (planId) {
+        router.push({
+          name: 'PlanView',
+          params: { planId }
+        });
+      }
+    };
+    // 계획 계속하기 함수
+    const continuePlan = () => {
+      router.push({
+        name: 'PlanView',
+        params: { planId: route.query.planId }
+      });
+    };
+
 
     return {
      selectedSido,
@@ -515,7 +590,10 @@ const cancelNewPlan = () => {
   newPlanUserId,
   newPlanTripAt,
   cancelNewPlan,
-  confirmNewPlan
+  confirmNewPlan,
+  addAndReturnToPlan,
+      continuePlan,
+      route
    };
  }
 };

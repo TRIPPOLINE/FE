@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api/plan',
+  baseURL: 'http://localhost:8081/api/plan',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -19,16 +19,30 @@ export const usePlanStore = defineStore('plan', {
   }),
 
   actions: {
+    // async listPlaces(planId) {
+    //   try {
+    //     const response = await apiClient.get('/list', { params: { planId } });
+    //     this.places = response.data;
+    //   } catch (error) {
+    //     console.error('여행지 목록 조회 실패:', error);
+    //     throw error;
+    //   }
+    // },
     async listPlaces(planId) {
       try {
-        const response = await apiClient.get('/list', { params: { planId } });
+        // planId를 정수로 변환
+        const numericPlanId = parseInt(planId, 10);
+        const response = await apiClient.get('/list', { 
+          params: { 
+            planId: numericPlanId 
+          } 
+        });
         this.places = response.data;
       } catch (error) {
-        console.error('여행지 목록 조회 실패:', error);
+        console.error('여행지 목록 조회 실패:', error.response?.data || error);
         throw error;
       }
     },
-
     async selectPlace(placeDto) {
       try {
         const response = await apiClient.post('/select', placeDto);
