@@ -4,19 +4,18 @@
       <!-- 로고 섹션 -->
       <div class="text-center mb-10">
         <router-link to="/" class="flex items-center justify-center mb-6">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-10 h-10 text-indigo-600 transform rotate-45">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-20 h-20 text-indigo-600 transform rotate-45">
             <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
           </svg>
-          <span class="text-3xl font-bold text-gray-900 ml-3">TRIPPOLINE</span>
         </router-link>
       </div>
 
-      <!-- 로그인 폼 -->
-      <div class="bg-transparent shadow-none sm:rounded-xl sm:px-20">
+           <!-- 로그인 폼 -->
+           <div class="bg-transparent shadow-none sm:rounded-xl sm:px-20">
         <form class="space-y-8" @submit.prevent="handleLogin">
           <!-- 아이디 입력 -->
           <div>
-            <label for="id" class="block text-base font-medium text-gray-700">아이디</label>
+            <label for="id" class="block text-base font-medium text-gray-700 text-left">아이디</label>
             <div class="mt-2">
               <input 
                 v-model="formData.id" 
@@ -32,7 +31,7 @@
 
           <!-- 비밀번호 입력 -->
           <div>
-            <label for="password" class="block text-base font-medium text-gray-700">비밀번호</label>
+            <label for="password" class="block text-base font-medium text-gray-700 text-left">비밀번호</label>
             <div class="mt-2">
               <input 
                 v-model="formData.password" 
