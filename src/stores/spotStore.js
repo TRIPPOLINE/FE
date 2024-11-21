@@ -33,37 +33,31 @@ export const useSpotStore = defineStore('spot', {
     },
 
     async fetchSigungus(sidoCode) {
-      try {
         const response = await apiClient.get(`/sigungus/${sidoCode}`);
-        this.sigungus = response.data;
-      } catch (error) {
-        console.error('시군구 목록 조회 실패:', error);
-        throw error;
-      }
+        return response.data;
     },
 
     async fetchSpotTypes() {
-      try {
-        const response = await apiClient.get('/contenttypes');
-        this.spotTypes = response.data;
-      } catch (error) {
-        console.error('관광지 타입 조회 실패:', error);
-        throw error;
-      }
+      const response = await apiClient.get('/contenttypes');
+      return response.data;
     },
 
-    async searchSpots() {
+    async searchSpots({ areaCode, siGunGuCode, contentTypeId }) {
       try {
-        const response = await apiClient.get('/search', {
-          params: {
-            sidoCode: this.selectedSido,
-            sigunguCode: this.selectedSigungu,
-            contentTypeId: this.selectedSpotType
-          }
+        console.log('areaCode:', areaCode);
+        console.log('siGunGuCode:', siGunGuCode);
+        console.log('contentTypeId:', contentTypeId);
+        
+        const response = await apiClient.post('/search', {
+          areaCode,
+          siGunGuCode,
+          contentTypeId: contentTypeId || null
         });
+        
         this.spots = response.data;
+        return response.data;
       } catch (error) {
-        console.error('관광지 검색 실패:', error);
+        console.error('검색 실패:', error);
         throw error;
       }
     }

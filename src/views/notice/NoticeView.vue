@@ -175,13 +175,15 @@ const handleDelete = async (noticeNo) => {
   };
   
   onMounted(async () => {
-    try {
-      await noticeStore.fetchNotices(1);
-    } catch (error) {
-      console.error('공지사항 목록 로드 실패:', error);
-      alert('공지사항 목록을 불러오는데 실패했습니다.');
-    }
-  });
+  try {
+    console.log('Fetching notices...');
+    await noticeStore.fetchNotices(1);
+    console.log('Notices fetched:', noticeStore.notices);
+  } catch (error) {
+    console.error('공지사항 목록 로드 실패:', error);
+    alert('공지사항 목록을 불러오는데 실패했습니다.');
+  }
+});
   
   watch([searchKey, searchWord], () => {
     noticeStore.setSearchParams({

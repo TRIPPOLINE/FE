@@ -1,10 +1,21 @@
 <!-- src/App.vue -->
 <script setup>
+import { useRoute } from 'vue-router';
+import NavigationBar from '@/components/NavigationBar.vue'; 
+const route = useRoute();
 </script>
 
 <template>
-  <div id="app" class="min-h-screen w-full bg-gray-50">
-    <router-view></router-view>
+  <div class="min-w-[450px]">
+    <!-- 네비게이션 바 -->
+    <header >
+      <NavigationBar />
+    </header>
+
+    <!-- 라우터 뷰 -->
+    <main class="flex-1 overflow-auto">
+      <router-view />
+    </main>
   </div>
 </template>
 

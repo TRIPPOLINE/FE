@@ -1,3 +1,4 @@
+<!--searchView.vue-->
 <template>
   <div class="container mx-auto p-4">
     <h1 class="text-2xl sm:text-3xl font-bold mb-4">여행지 검색하기</h1>
@@ -30,6 +31,7 @@
           <select 
             v-model="selectedSigungu"
             :disabled="!selectedSido"
+            @change="handleSigunguChange"
             class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
             <option value="">선택하세요</option>
@@ -48,9 +50,10 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">관광지 타입</label>
           <select 
             v-model="selectedSpotType"
+            @change="handleSpotTypeChange"
             class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
-            <option value="">선택하세요</option>
+            <option value="">전체</option>
             <option 
               v-for="type in spotTypes" 
               :key="type.spotTypeId" 
@@ -62,53 +65,74 @@
         </div>
       </div>
 
-      <!-- 검색 버튼 -->
-      <div class="mt-4 sm:mt-6 flex justify-end">
+      <!-- 버튼 그룹 -->
+      <div class="mt-4 sm:mt-6 flex justify-end space-x-2">
+        <!-- 검색 버튼 -->
         <button 
           @click="searchSpots"
           class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
         >
           검색
         </button>
+
+        <!-- 초기화 버튼 -->
+        <button 
+          @click="resetSearch"
+          class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+        >
+          초기화
+        </button>
       </div>
     </div>
 
-    <!-- 지도 영역 -->
-    <div id="map" class="w-full h-64 sm:h-96 rounded-lg shadow-sm mb-4 sm:mb-6"></div>
-
-    <!-- 검색 결과 -->
-    <div v-if="spots.length > 0" class="bg-white shadow-sm rounded-lg overflow-hidden">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-        <div 
-          v-for="spot in spots" 
-          :key="spot.spotId"
-          class="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-        >
-          <img 
-            :src="spot.imagePath1 || '/placeholder-image.jpg'" 
-            :alt="spot.title"
-            class="w-full h-40 object-cover"
+    <!-- 검색 결과 및 지도 영역 -->
+    <div class="flex">
+      <!-- 검색 결과 -->
+      <div class="bg-white shadow-sm rounded-lg overflow-hidden w-full lg:w-1/3 mr-4">
+        <div v-if="spots.length > 0" class="grid grid-cols-1 gap-4 p-4">
+          <div 
+            v-for="spot in spots" 
+            :key="spot.spotId"
+            class="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+            @click="showSpotOnMap(spot)"
           >
-          <div class="p-4">
-            <h3 class="text-lg font-semibold mb-2">{{ spot.title }}</h3>
-            <p class="text-sm text-gray-600">{{ spot.frontAddress }}</p>
+            <img 
+              :src="spot.imagePath1 || '/placeholder-image.jpg'" 
+              :alt="spot.title"
+              class="w-full h-40 object-cover"
+            >
+            <div class="p-4">
+              <h3 class="text-lg font-semibold mb-2">{{ spot.title }}</h3>
+              <p class="text-sm text-gray-600">{{ spot.frontAddress }}</p>
+            </div>
           </div>
         </div>
+
+        <!-- 검색 결과 없음 -->
+        <div v-if="hasSearched && spots.length === 0" class="p-4 text-center text-gray-500">
+          검색 결과가 없습니다.
+        </div>
+
+        <!-- 초기 상태 메시지 -->
+        <div v-if="!hasSearched" class="p-4 text-center text-gray-500">
+          검색 조건을 선택하고 검색 버튼을 눌러주세요.
+        </div>
       </div>
+
+      <!-- 지도 영역 -->
+      <div id="map" class="w-full h-auto lg:h-auto lg:w-full rounded-lg shadow-sm relative">
+  <div class="absolute top-4 right-4 z-10">
+    <button @click="zoomIn" class="bg-white p-2 rounded-t-md shadow">+</button>
+    <button @click="zoomOut" class="bg-white p-2 rounded-b-md shadow">-</button>
+  </div>
+</div>
     </div>
 
-    <!-- 검색 결과 없음 -->
-    <div 
-      v-else-if="hasSearched" 
-      class="bg-white shadow-sm rounded-lg p-4 text-center text-gray-500"
-    >
-      검색 결과가 없습니다.
-    </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useSpotStore } from '@/stores/spotStore';
 
 export default {
@@ -124,67 +148,147 @@ export default {
     const sigungus = ref([]);
     const spotTypes = ref([]);
     const spots = ref([]);
+    const mapZoomLevel = ref(13);
 
     let map = null;
 
-    const handleSidoChange = async () => {
+    const handleSidoChange = async (e) => {
+      const value = e.target.value
       selectedSigungu.value = '';
-      if (selectedSido.value) {
-        await spotStore.fetchSigungus(selectedSido.value);
-        sigungus.value = spotStore.sigungus;
+      if (value) {
+        const data = await spotStore.fetchSigungus(value);
+        sigungus.value = data;
+        console.log(sigungus)
       }
+    };
+
+    const handleSigunguChange = async (e) => {
+      const value = e.target.value
+      selectedSpotType.value = '';
+      if (value) {
+        const data = await spotStore.fetchSpotTypes(value);
+        spotTypes.value = data;
+        console.log(spotTypes)
+      }
+    };
+
+    const handleSpotTypeChange = async (e) => {
+      const value = e.target.value
+      selectedSpotType.value = value;
+      console.log(selectedSpotType)
     };
 
     const searchSpots = async () => {
-      try {
+      // 시/도와 시/군/구가 선택되어야 검색을 수행
+      if (!selectedSido.value || !selectedSigungu.value) return;
+        
         hasSearched.value = true;
-        await spotStore.searchSpots({
-          sidoCode: selectedSido.value,
-          sigunguCode: selectedSigungu.value,
-          contentTypeId: selectedSpotType.value
-        });
-        spots.value = spotStore.spots;
+      
+        // 관광지 타입이 선택되지 않은 경우 모든 관광지를 검색
+      const contentTypeId = selectedSpotType.value || null;
 
-        // 검색 결과가 있으면 첫 번째 결과의 위치로 지도 이동
-        if (spots.value.length > 0) {
-          const firstSpot = spots.value[0];
-          const moveLatLon = new kakao.maps.LatLng(firstSpot.latitude, firstSpot.longitude);
-          map.setCenter(moveLatLon);
+      
+
+        // 선택된 조건에 따라 관광지 검색
+        await spotStore.searchSpots({
+          areaCode: selectedSido.value,
+          siGunGuCode: selectedSigungu.value,
+          contentTypeId: contentTypeId
+        });
+
+        spots.value = spotStore.spots;
+        //지도에 마커 표시
+        if (map && window.kakao && window.kakao.maps) {
+          spots.value.forEach(spot => addMarker(spot));
+          
+          // 첫 번째 스팟으로 지도 중심 이동
+          if (spots.value.length > 0) {
+            showSpotOnMap(spots.value[0]);
+          }
         }
-      } catch (error) {
-        console.error('검색 실패:', error);
-        alert('검색 중 오류가 발생했습니다.');
+    };
+
+    const resetSearch = () => {
+      selectedSido.value = '';
+      selectedSigungu.value = '';
+      selectedSpotType.value = '';
+      spots.value = [];
+      hasSearched.value = false;
+      sigungus.value = [];
+      
+      // 지도 초기화
+      if (map && window.kakao && window.kakao.maps) {
+        map.setCenter(new window.kakao.maps.LatLng(36.2683, 127.6358)); // 대한민국 중심점으로 이동
+        map.setLevel(13); // 기본 줌 레벨로 설정
       }
     };
 
-    onMounted(() => {
-  // 카카오맵 API 스크립트 동적 로드
-  const script = document.createElement('script');
-  script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=2bd4f83bc7309d38194a5a7f96c884e0&autoload=false`;
-  script.onload = () => {
-    window.kakao.maps.load(() => {
-      const container = document.getElementById('map');
-      const options = {
-        center: new window.kakao.maps.LatLng(33.450701, 126.570667),
-        level: 3
-      };
-      map = new window.kakao.maps.Map(container, options);
+    const addMarker = (spot) => {
+      if (!window.kakao || !window.kakao.maps) return;
+      
+      const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
+      new window.kakao.maps.Marker({
+        position: position,
+        map: map
+      });
+    };
+    
+
+    const showSpotOnMap = (spot) => {
+      if (!window.kakao || !window.kakao.maps) return;
+      const moveLatLon = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
+      map.setCenter(moveLatLon);
+      map.setLevel(3); // 스팟 선택 시 줌 레벨을 3으로 설정
+      mapZoomLevel.value = 3;
+    };
+
+    const zoomIn = () => {
+      if (map) {
+        map.setLevel(map.getLevel() - 1);
+      }
+    };
+
+    const zoomOut = () => {
+      if (map) {
+        map.setLevel(map.getLevel() + 1);
+      }
+    };
+    // 줌 레벨 변경 감지
+    watch(mapZoomLevel, (newLevel) => {
+      if (map) {
+        map.setLevel(newLevel);
+      }
     });
-  };
-  document.head.appendChild(script);
 
-      //const initializeMap = () => {
-      //  const container = document.getElementById('map');
-      //  const options = {
-      //    center: new kakao.maps.LatLng(33.450701, 126.570667),
-      //    level: 3
-      //  };
-      //  map = new kakao.maps.Map(container, options);
-      //};
-
-      // 기존 데이터 로드
+    onMounted(() => {
+      const script = document.createElement('script');
+      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=2bd4f83bc7309d38194a5a7f96c884e0&autoload=false`;
+      script.async = true;
+      
+      script.onload = () => {
+        window.kakao.maps.load(() => {
+          initMap();
+        });
+      };
+      
+      document.head.appendChild(script);
+      
       loadInitialData();
     });
+
+    const initMap = () => {
+      const container = document.getElementById('map');
+      const options = {
+        center: new window.kakao.maps.LatLng(36.2683, 127.6358),
+        level: mapZoomLevel.value
+      };
+      map = new window.kakao.maps.Map(container, options);
+
+      // 줌 변경 이벤트 리스너 추가
+      window.kakao.maps.event.addListener(map, 'zoom_changed', function() {
+        mapZoomLevel.value = map.getLevel();
+      });
+    };
 
     const loadInitialData = async () => {
       try {
@@ -192,8 +296,10 @@ export default {
           spotStore.fetchSidos(),
           spotStore.fetchSpotTypes()
         ]);
+        
         sidos.value = spotStore.sidos;
         spotTypes.value = spotStore.spotTypes;
+        
       } catch (error) {
         console.error('초기 데이터 로드 실패:', error);
         alert('데이터 로드 중 오류가 발생했습니다.');
@@ -201,23 +307,33 @@ export default {
     };
 
     return {
-      selectedSido,
-      selectedSigungu,
-      selectedSpotType,
-      sidos,
-      sigungus,
-      spotTypes,
-      spots,
-      hasSearched,
-      handleSidoChange,
-      searchSpots
-    };
-  }
+     selectedSido,
+     selectedSigungu,
+     selectedSpotType,
+     sidos,
+     sigungus,
+     spotTypes,
+     spots,
+     hasSearched,
+     handleSidoChange,
+     handleSigunguChange,
+     handleSpotTypeChange,
+     searchSpots,
+     resetSearch,
+      showSpotOnMap,
+      mapZoomLevel,
+      zoomIn,
+      zoomOut
+   };
+ }
 };
 </script>
 
 <style scoped>
 .container {
-  max-width: 1200px;
+ max-width: 1200px;
+}
+#map {
+ height: 500px; /* 지도 높이를 설정합니다 */
 }
 </style>
