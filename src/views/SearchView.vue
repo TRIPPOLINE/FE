@@ -1,10 +1,10 @@
 <template>
   <div class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold mb-4">여행지 검색하기</h1>
+    <h1 class="text-2xl sm:text-3xl font-bold mb-4">여행지 검색하기</h1>
     
     <!-- 검색 폼 -->
-    <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white shadow-sm rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <!-- 시도 선택 -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">시/도</label>
@@ -63,7 +63,7 @@
       </div>
 
       <!-- 검색 버튼 -->
-      <div class="mt-6 flex justify-end">
+      <div class="mt-4 sm:mt-6 flex justify-end">
         <button 
           @click="searchSpots"
           class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
@@ -74,11 +74,11 @@
     </div>
 
     <!-- 지도 영역 -->
-    <div id="map" style="width:100%;height:400px;" class="rounded-lg shadow-sm mb-6"></div>
+    <div id="map" class="w-full h-64 sm:h-96 rounded-lg shadow-sm mb-4 sm:mb-6"></div>
 
     <!-- 검색 결과 -->
     <div v-if="spots.length > 0" class="bg-white shadow-sm rounded-lg overflow-hidden">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
         <div 
           v-for="spot in spots" 
           :key="spot.spotId"
@@ -87,7 +87,7 @@
           <img 
             :src="spot.imagePath1 || '/placeholder-image.jpg'" 
             :alt="spot.title"
-            class="w-full h-48 object-cover"
+            class="w-full h-40 object-cover"
           >
           <div class="p-4">
             <h3 class="text-lg font-semibold mb-2">{{ spot.title }}</h3>
@@ -100,7 +100,7 @@
     <!-- 검색 결과 없음 -->
     <div 
       v-else-if="hasSearched" 
-      class="bg-white shadow-sm rounded-lg p-6 text-center text-gray-500"
+      class="bg-white shadow-sm rounded-lg p-4 text-center text-gray-500"
     >
       검색 결과가 없습니다.
     </div>

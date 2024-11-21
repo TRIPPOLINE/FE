@@ -1,14 +1,14 @@
 <!-- src/views/NoticeDetailView.vue -->
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="max-w-full px-4 py-8">
+  <div class="min-h-screen bg-gray-50 flex justify-center items-center p-4">
+    <div class="w-full max-w-3xl">
       <!-- 헤더 영역 -->
-      <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
-        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <h2 class="text-2xl font-bold text-gray-800">공지사항 상세</h2>
+      <div class="bg-white shadow-sm rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-800">공지사항 상세</h2>
           <button
             @click="goToList"
-            class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+            class="w-full sm:w-auto px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
           >
             목록으로 돌아가기
           </button>
@@ -19,8 +19,8 @@
       <div class="bg-white shadow-sm rounded-lg overflow-hidden">
         <div class="p-4 sm:p-6">
           <!-- 제목 및 메타 정보 -->
-          <div class="mb-6 border-b pb-4">
-            <h3 class="text-xl sm:text-2xl font-bold mb-3">{{ notice.title }}</h3>
+          <div class="mb-4 sm:mb-6 border-b pb-4">
+            <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">{{ notice.title }}</h3>
             <div class="flex flex-col sm:flex-row sm:justify-between text-sm text-gray-500">
               <div class="mb-2 sm:mb-0">
                 <span class="block sm:inline sm:mr-4">작성자: {{ notice.userId }}</span>
@@ -30,12 +30,12 @@
           </div>
 
           <!-- 내용 -->
-          <div class="mb-6 text-base sm:text-lg leading-relaxed text-gray-700 whitespace-pre-line">
+          <div class="mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed text-gray-700 whitespace-pre-line">
             {{ notice.contents }}
           </div>
 
           <!-- 버튼 영역 -->
-          <div class="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-6">
+          <div class="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-4 sm:mt-6">
             <button
               @click="modifyNotice"
               class="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
@@ -54,6 +54,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from 'vue';

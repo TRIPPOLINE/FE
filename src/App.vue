@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <div id="app" class="min-h-screen bg-gray-50">
+  <div id="app" class="min-h-screen w-full bg-gray-50">
     <router-view></router-view>
   </div>
 </template>

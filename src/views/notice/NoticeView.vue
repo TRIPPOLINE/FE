@@ -1,103 +1,103 @@
 <!-- src/views/NoticeView.vue -->
 <template>
-    <div class="min-h-screen bg-gray-50">
-      <div class="max-w-full px-4 py-8">
-        <!-- 헤더 영역 -->
-        <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
-          <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <h2 class="text-2xl font-bold text-gray-800">공지사항</h2>
+  <div class="min-h-screen bg-gray-50 p-4">
+    <div class="max-w-7xl mx-auto">
+      <!-- 헤더 영역 -->
+      <div class="bg-white shadow-sm rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-800">공지사항</h2>
+          
+          <!-- 검색 폼 -->
+          <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+            <select 
+              v-model="searchKey" 
+              class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 w-full sm:w-32"
+            >
+              <option value="">선택</option>
+              <option value="title">제목</option>
+              <option value="content">내용</option>
+              <option value="user_id">작성자</option>
+            </select>
             
-            <!-- 검색 폼 -->
-            <div class="flex flex-wrap gap-2">
-              <select 
-                v-model="searchKey" 
-                class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 w-32"
-              >
-                <option value="">선택</option>
-                <option value="title">제목</option>
-                <option value="content">내용</option>
-                <option value="user_id">작성자</option>
-              </select>
-              
-              <input 
-                v-model="searchWord" 
-                type="text" 
-                placeholder="검색어를 입력하세요"
-                class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 flex-1 min-w-[200px]"
-                @keyup.enter="handleSearch"
-              >
-              
-              <button 
-                @click="handleSearch"
-                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-              >
-                검색
-              </button>
-              
-              <button 
-                @click="resetSearch"
-                class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
-              >
-                초기화
-              </button>
-            </div>
+            <input 
+              v-model="searchWord" 
+              type="text" 
+              placeholder="검색어를 입력하세요"
+              class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 flex-1 min-w-0"
+              @keyup.enter="handleSearch"
+            >
+            
+            <button 
+              @click="handleSearch"
+              class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors w-full sm:w-auto"
+            >
+              검색
+            </button>
+            
+            <button 
+              @click="resetSearch"
+              class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors w-full sm:w-auto"
+            >
+              초기화
+            </button>
           </div>
-        </div>
-      
-        <!-- 테이블 영역 -->
-        <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-4 text-counter text-sm font-medium text-gray-500 uppercase tracking-wider">제목</th>
-                  <th class="px-6 py-4 text-counter text-sm font-medium text-gray-500 uppercase tracking-wider">내용</th>
-                  <th class="px-3 py-4 text-counter text-sm font-medium text-gray-500 uppercase tracking-wider">작성자</th>
-                  <th class="px-6 py-4 text-counter text-sm font-medium text-gray-500 uppercase tracking-wider">작성일</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-  <tr 
-    v-for="notice in notices" 
-    :key="notice.noticeNo" 
-    class="hover:bg-gray-50 transition-colors cursor-pointer"
-    @click="goToDetail(notice.noticeNo)"
-  >
-    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ notice.title }}</td>
-    <td class="px-6 py-4 text-sm text-gray-500 max-w-md truncate">{{ notice.contents }}</td>
-    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ notice.userId }}</td>
-    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(notice.createdAt) }}</td>
-  </tr>
-</tbody>
-            </table>
-          </div>
-        </div>
-        
-        <!-- 페이지네이션 -->
-        <div v-if="totalPages > 0" class="flex justify-center mt-6 gap-2">
-          <button 
-            v-for="page in totalPages" 
-            :key="page"
-            @click="changePage(page)"
-            class="px-4 py-2 border rounded-md transition-colors"
-            :class="currentPage === page ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 hover:bg-gray-50'"
-          >
-            {{ page }}
-          </button>
-        </div>
-    
-        <!-- 글쓰기 버튼 -->
-        <div class="fixed bottom-8 right-8">
-          <button 
-            @click="goToWritePage"
-            class="px-6 py-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
-          >
-            <span>글쓰기</span>
-          </button>
         </div>
       </div>
+    
+      <!-- 테이블 영역 -->
+      <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">제목</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">내용</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">작성자</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">작성일</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr 
+                v-for="notice in notices" 
+                :key="notice.noticeNo" 
+                class="hover:bg-gray-50 transition-colors cursor-pointer"
+                @click="goToDetail(notice.noticeNo)"
+              >
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ notice.title }}</td>
+                <td class="px-4 py-3 text-sm text-gray-500 max-w-xs truncate hidden sm:table-cell">{{ notice.contents }}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ notice.userId }}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">{{ formatDate(notice.createdAt) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- 페이지네이션 -->
+      <div v-if="totalPages > 0" class="flex justify-center mt-4 sm:mt-6 gap-2">
+        <button 
+          v-for="page in totalPages" 
+          :key="page"
+          @click="changePage(page)"
+          class="px-3 py-1 border rounded-md transition-colors text-sm"
+          :class="currentPage === page ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 hover:bg-gray-50'"
+        >
+          {{ page }}
+        </button>
+      </div>
+  
+      <!-- 글쓰기 버튼 -->
+      <div class="fixed bottom-4 right-4 sm:bottom-8 sm:right-8">
+        <button 
+          @click="goToWritePage"
+          class="px-4 py-2 sm:px-6 sm:py-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+        >
+          <span>글쓰기</span>
+        </button>
+      </div>
     </div>
-  </template>
+  </div>
+</template>
   
   <script setup>
   import { ref, onMounted, computed, watch } from 'vue';
