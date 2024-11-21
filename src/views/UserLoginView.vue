@@ -99,10 +99,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user'
+import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter()
-const userStore = useUserStore()
+const authStore = useAuthStore()
 
 const formData = ref({
   id: '',
@@ -112,10 +112,14 @@ const formData = ref({
 
 const handleLogin = async () => {
   try {
-    await userStore.login({
-      id: formData.value.id,
+    await authStore.login({
+      userId: formData.value.id,
       password: formData.value.password
     })
+    if (formData.value.remember) {
+      // 로그인 유지 로직 구현 (예: localStorage에 토큰 저장)
+      localStorage.setItem('rememberLogin', 'true')
+    }
     router.push('/')
   } catch (error) {
     console.error('로그인 실패:', error)
