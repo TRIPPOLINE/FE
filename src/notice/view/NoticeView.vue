@@ -101,7 +101,7 @@
   
   <script setup>
   import { ref, onMounted, computed, watch } from 'vue';
-  import { useNoticeStore } from '@/stores/noticeStore';
+import { useNoticeStore } from "@/notice/noticeStore";
   import { useRouter } from 'vue-router';
   
   const router = useRouter();

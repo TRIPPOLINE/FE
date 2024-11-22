@@ -1,7 +1,7 @@
 // stores/planStore.js
 import { defineStore } from 'pinia';
 import axios from 'axios';
-import api from "@/Auth/api/Index";
+import api from "@/Auth/api/AuthIndex";
 
 // const apiClient = axios.create({
 //   baseURL: 'http://localhost:8080/api/plan',

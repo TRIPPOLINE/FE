@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import { usePlanStore } from '@/stores/planStore';
+import { usePlanStore } from "@/plan/planStore";
 import { onMounted, ref } from 'vue';
 import draggable from 'vuedraggable';
 import { useRouter, useRoute } from 'vue-router';

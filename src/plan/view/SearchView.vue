@@ -193,9 +193,9 @@
 
 <script>
 import { ref, onMounted, watch } from 'vue';
-import { useSpotStore } from '@/stores/spotStore';
-import { usePlanStore } from '@/stores/planStore';
 import { useRouter, useRoute } from 'vue-router';
+import { useSpotStore } from "@/plan/spotStore";
+import { usePlanStore } from "@/plan/planStore";
 
 export default {
   name: 'SearchView',

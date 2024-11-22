@@ -59,7 +59,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { useNoticeStore } from '@/stores/noticeStore';
+import { useNoticeStore } from "@/notice/noticeStore";
 
 const router = useRouter();
 const route = useRoute();
