@@ -137,22 +137,6 @@
 
   </div>
   <!-- 조건부 버튼 렌더링 -->
-  <!--<div class="mt-4">-->
-    <!-- 새 계획 생성 버튼 -->
-    <!--<button v-if="!route.query.planId" 
-            @click="showModal = true" 
-            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-      여행 계획 생성하기
-    </button>-->
-    
-    <!-- 계획 계속하기 버튼 -->
-    <!--<button v-else 
-            @click="continuePlan" 
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-      여행 계획 계속하기
-    </button>
-  </div>-->
-  <!-- 조건부 버튼 렌더링 -->
 <div class="mt-4">
   <!-- 새 계획 생성 버튼 -->
   <button v-if="!route.query.planId" 
@@ -171,10 +155,16 @@
   <div v-if="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
   <div class="bg-white p-5 rounded-lg shadow-xl relative">
     <h2 class="text-xl font-bold mb-4">새 여행 계획 생성</h2>
-    <div class="mb-4">
+    <!--<div class="mb-4">
       <label class="block text-sm font-medium text-gray-700 mb-2">사용자 ID</label>
-      <input v-model="newPlanUserId" type="text" class="w-full px-3 py-2 border rounded-md">
-    </div>
+      <p class="px-3 py-2 border rounded-md bg-gray-100">{{ authStore.user?.id  }}</p>
+    </div>-->
+    <div class="mb-4">
+    <label class="block text-sm font-medium text-gray-700 mb-2">사용자 ID</label>
+    <p class="px-3 py-2 border rounded-md bg-gray-100">
+      {{ getUserId }}
+    </p>
+  </div>
     <div class="mb-4">
       <label class="block text-sm font-medium text-gray-700 mb-2">여행 날짜</label>
       <input v-model="newPlanTripAt" type="date" class="w-full px-3 py-2 border rounded-md">
@@ -192,16 +182,19 @@
 </template>
 
 <script>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useSpotStore } from "@/plan/spotStore";
 import { usePlanStore } from "@/plan/planStore";
+import { useAuthStore } from "@/Auth/components/auth";
+import { jwtDecode } from 'jwt-decode';
 
 export default {
   name: 'SearchView',
   setup() {
     const spotStore = useSpotStore();
     const planStore = usePlanStore();
+    const authStore = useAuthStore();
     const selectedSido = ref('');
     const selectedSigungu = ref('');
     const selectedSpotType = ref('');
@@ -214,6 +207,12 @@ export default {
     const spots = ref([]);
     const mapZoomLevel = ref(13);
     const route = useRoute();
+
+
+
+    const showModal = ref(false);
+    const newPlanUserId = ref('');
+    const newPlanTripAt = ref('');
 
     let map = null;
 
@@ -515,14 +514,38 @@ const isSpotSelected = (spot) => {
     };
     ;
 
-    const showModal = ref(false);
-const newPlanUserId = ref('');
-    const newPlanTripAt = ref('');
 
+
+// const startNewPlan = () => {
+//   showModal.value = true;
+//   newPlanUserId.value = '';
+//   newPlanTripAt.value = new Date().toISOString().split('T')[0];
+    // };
+//     const startNewPlan = () => {
+//   showModal.value = true;
+//   newPlanUserId.value = authStore.user?.id || ''; // 저장된 userId 사용
+//   newPlanTripAt.value = new Date().toISOString().split('T')[0];
+// };
+
+// const startNewPlan = () => {
+//   const token = localStorage.getItem('accessToken');
+//   if (!token) {
+//     alert('로그인이 필요합니다');
+//     return;
+//   }
+//   showModal.value = true;
+//   const decoded = jwtDecode(token);
+//   newPlanUserId.value = decoded.userId;
+//   newPlanTripAt.value = new Date().toISOString().split('T')[0];
+// };
 
 const startNewPlan = () => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    alert('로그인이 필요합니다');
+    return;
+  }
   showModal.value = true;
-  newPlanUserId.value = '';
   newPlanTripAt.value = new Date().toISOString().split('T')[0];
 };
 
@@ -600,22 +623,59 @@ const cancelNewPlan = () => {
 //     alert('여행 계획 생성 중 오류가 발생했습니다.');
 //   }
     // };
-    const confirmNewPlan = async () => {
-  if (!newPlanUserId.value || !newPlanTripAt.value) {
-    alert('사용자 ID와 여행 날짜를 모두 입력해주세요.');
+
+    // 사용자 id 찾기
+    const getUserId = computed(() => {
+  const token = localStorage.getItem('accessToken');
+  if (token) {
+    const decoded = jwtDecode(token);
+    return decoded.userId;
+  }
+  return '로그인이 필요합니다';
+});
+
+  //   const confirmNewPlan = async () => {
+  // if (!newPlanUserId.value || !newPlanTripAt.value) {
+  //   alert('사용자 ID와 여행 날짜를 모두 입력해주세요.');
+  //   return;
+  // }
+
+  // try {
+  //   const planData = {
+  //     //userId: newPlanUserId.value,
+  //     userId: authStore.user?.id, 
+  //     tripAt: newPlanTripAt.value
+  //   };
+  //   console.log(planData.userId);
+  //   const result = await planStore.insertPlan(planData);
+  //   showModal.value = false;
+    
+  //   // PlanView로 이동
+  //   router.push({
+  //     name: 'PlanView',
+  //     params: { planId: result.planId }
+  //   });
+  // } catch (error) {
+  //   console.error('여행 계획 생성 실패:', error);
+  //   alert('여행 계획 생성 중 오류가 발생했습니다.');
+  // }
+  //   };
+
+  const confirmNewPlan = async () => {
+  if (!newPlanTripAt.value) {
+    alert('여행 날짜를 입력해주세요.');
     return;
   }
-
   try {
+    const token = localStorage.getItem('accessToken');
+    const decoded = jwtDecode(token);
     const planData = {
-      userId: newPlanUserId.value,
+      userId: decoded.userId,
       tripAt: newPlanTripAt.value
     };
-    
+    console.log(`사용자 아이디`,planData.userId);
     const result = await planStore.insertPlan(planData);
     showModal.value = false;
-    
-    // PlanView로 이동
     router.push({
       name: 'PlanView',
       params: { planId: result.planId }
@@ -624,7 +684,11 @@ const cancelNewPlan = () => {
     console.error('여행 계획 생성 실패:', error);
     alert('여행 계획 생성 중 오류가 발생했습니다.');
   }
-    };
+};
+
+
+
+  
 // 기존 여행 계획에 추가하는 경우
 const addAndReturnToPlan = async () => {
       const planId = route.query.planId;
@@ -679,7 +743,8 @@ const addAndReturnToPlan = async () => {
   addAndReturnToPlan,
       continuePlan,
       route,
-      addMarker
+      addMarker,
+      getUserId
       //handleImageError
    };
  }

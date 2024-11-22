@@ -10,6 +10,20 @@ const apiClient = axios.create({
   },
 });
 
+// 요청 인터셉터 추가
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export const useNoticeStore = defineStore('notice', {
   state: () => ({
     notices: [],
@@ -60,15 +74,16 @@ export const useNoticeStore = defineStore('notice', {
     },
 
     // 단일 공지사항 조회 액션 추가
-    async fetchNotice(noticeNo) {
-      try {
-        const response = await apiClient.get(`/notice/modify/${noticeNo}`);
-        return response.data;
-      } catch (error) {
-        console.error('공지사항 조회 실패:', error);
-        throw error;
-      }
-    },
+    // async fetchNotice(noticeNo) {
+    //   try {
+    //     const response = await apiClient.get(`/notice/modify/${noticeNo}`);
+    //     return response.data;
+    //   } catch (error) {
+    //     console.error('공지사항 조회 실패:', error);
+    //     throw error;
+    //   }
+    // },
+    
 
     // 공지사항 수정 액션 추가
     async modifyNotice(noticeData) {

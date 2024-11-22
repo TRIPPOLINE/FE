@@ -35,7 +35,7 @@
           </div>
 
           <!-- 버튼 영역 -->
-          <div class="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-4 sm:mt-6">
+          <!-- <div class="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-4 sm:mt-6">
             <button
               @click="modifyNotice"
               class="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
@@ -48,7 +48,21 @@
             >
               삭제
             </button>
-          </div>
+          </div> -->
+          <div v-if="isAdmin" class="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-4 sm:mt-6">
+    <button
+      @click="modifyNotice"
+      class="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+    >
+      수정
+    </button>
+    <button
+      @click="deleteNotice"
+      class="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+    >
+      삭제
+    </button>
+  </div>
         </div>
       </div>
     </div>
@@ -57,9 +71,10 @@
 
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useNoticeStore } from "@/notice/noticeStore";
+import { jwtDecode } from 'jwt-decode';
 
 const router = useRouter();
 const route = useRoute();
@@ -105,4 +120,18 @@ const deleteNotice = async () => {
     }
   }
 };
+// 관리자 권한 확인을 위한 computed 속성
+const isAdmin = computed(() => {
+  const token = localStorage.getItem('accessToken');
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      return decoded.roleId === 1;
+    } catch (error) {
+      console.error('Token decode failed:', error);
+      return false;
+    }
+  }
+  return false;
+});
 </script>

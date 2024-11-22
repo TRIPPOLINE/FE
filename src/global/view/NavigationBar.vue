@@ -61,9 +61,11 @@ export default {
   setup() {
     const authStore = useAuthStore()
 
-    const isLoggedIn = computed(() => {
-      return localStorage.getItem('accessToken') && localStorage.getItem('refreshToken')
-    })
+    const isLoggedIn = computed(() => authStore.isAuthenticated)
+
+    // const isLoggedIn = computed(() => {
+    //   return localStorage.getItem('accessToken') && localStorage.getItem('refreshToken')
+    // })
 
     const handleLogout = () => {
       authStore.logout()
