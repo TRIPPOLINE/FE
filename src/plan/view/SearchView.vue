@@ -660,7 +660,7 @@ const cancelNewPlan = () => {
   //   alert('여행 계획 생성 중 오류가 발생했습니다.');
   // }
   //   };
-
+//
   const confirmNewPlan = async () => {
   if (!newPlanTripAt.value) {
     alert('여행 날짜를 입력해주세요.');

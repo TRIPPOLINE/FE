@@ -50,7 +50,7 @@
 <script>
 import { computed } from 'vue'
 import { useAuthStore } from "@/Auth/components/auth";
-
+//
 export default {
   name: 'NavigationBar',
   computed: {
