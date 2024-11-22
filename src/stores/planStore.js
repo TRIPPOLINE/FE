@@ -1,14 +1,15 @@
 // stores/planStore.js
 import { defineStore } from 'pinia';
 import axios from 'axios';
+import api from "@/Auth/api/Index";
 
-const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api/plan',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+// const apiClient = axios.create({
+//   baseURL: 'http://localhost:8080/api/plan',
+//   timeout: 10000,
+//   headers: {
+//     'Content-Type': 'application/json',
+//   },
+// });
 
 export const usePlanStore = defineStore('plan', {
   state: () => ({
@@ -32,7 +33,7 @@ export const usePlanStore = defineStore('plan', {
       try {
         // planId를 정수로 변환
         const numericPlanId = parseInt(planId, 10);
-        const response = await apiClient.get('/list', { 
+        const response = await api.get('/plan/list', { 
           params: { 
             planId: numericPlanId 
           } 
@@ -45,7 +46,7 @@ export const usePlanStore = defineStore('plan', {
     },
     async selectPlace(placeDto) {
       try {
-        const response = await apiClient.post('/select', placeDto);
+        const response = await api.post('/plan/select', placeDto);
         await this.listPlaces(placeDto.planId);
         return response.data;
       } catch (error) {
@@ -56,7 +57,7 @@ export const usePlanStore = defineStore('plan', {
 
     async deletePlace(placeDto) {
       try {
-        await apiClient.post('/delete', placeDto);
+        await api.post('/plan/delete', placeDto);
         await this.listPlaces(placeDto.planId);
       } catch (error) {
         console.error('여행지 삭제 실패:', error);
@@ -66,7 +67,7 @@ export const usePlanStore = defineStore('plan', {
 
     async modifyOrder(placeDto) {
       try {
-        await apiClient.post('/order', placeDto);
+        await api.post('/plan/order', placeDto);
         await this.listPlaces(placeDto.planId);
       } catch (error) {
         console.error('여행지 순서 변경 실패:', error);
@@ -76,7 +77,7 @@ export const usePlanStore = defineStore('plan', {
 
     async deletePlan(planDto) {
       try {
-        await apiClient.post('/deletePlan', planDto);
+        await api.post('/plan/deletePlan', planDto);
         this.currentPlan = null;
       } catch (error) {
         console.error('여행 계획 삭제 실패:', error);
@@ -139,7 +140,7 @@ export const usePlanStore = defineStore('plan', {
           tripAt: planData.tripAt
         };
 
-        const response = await apiClient.post('/insert', formattedData);
+        const response = await api.post('/plan/insert', formattedData);
         
         // 서버에서 반환된 데이터에서 planId 추출 및 저장
         const planDto = response.data;
