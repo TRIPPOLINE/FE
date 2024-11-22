@@ -2,6 +2,7 @@
 <script setup>
 import { useRoute } from 'vue-router';
 import NavigationBar from '@/components/NavigationBar.vue'; 
+import FooterBar from '@/components/FooterBar.vue';
 const route = useRoute();
 </script>
 
@@ -16,6 +17,7 @@ const route = useRoute();
     <main class="flex-1 overflow-auto">
       <router-view />
     </main>
+    <FooterBar class="mt-auto" />
   </div>
 </template>
 

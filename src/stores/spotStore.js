@@ -1,5 +1,14 @@
 // stores/spotStore.js
 import { defineStore } from 'pinia';
+import axios from 'axios';
+
+const apiClient = axios.create({
+  baseURL: 'http://localhost:8080/api/spot',
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 import api from '@/Auth/api/Index';
 
 export const useSpotStore = defineStore('spot', {
