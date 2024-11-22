@@ -25,7 +25,9 @@
                 required 
                 class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
                 placeholder="아이디를 입력하세요"
+                @blur="validateField('id')"
               >
+              <p v-if="errors.id" class="mt-2 text-sm text-red-600">{{ errors.id }}</p>
             </div>
           </div>
 
@@ -41,7 +43,9 @@
                 required 
                 class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
                 placeholder="비밀번호를 입력하세요"
+                @blur="validateField('password')"
               >
+              <p v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password }}</p>
             </div>
           </div>
 
@@ -57,7 +61,9 @@
                 required 
                 class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
                 placeholder="이름을 입력하세요"
+                @blur="validateField('name')"
               >
+              <p v-if="errors.name" class="mt-2 text-sm text-red-600">{{ errors.name }}</p>
             </div>
           </div>
 
@@ -73,7 +79,9 @@
                 required 
                 class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
                 placeholder="이메일을 입력하세요"
+                @blur="validateField('email')"
               >
+              <p v-if="errors.email" class="mt-2 text-sm text-red-600">{{ errors.email }}</p>
             </div>
           </div>
 
@@ -82,6 +90,7 @@
             <button 
               type="submit" 
               class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              :disabled="!isFormValid"
             >
               회원가입
             </button>
@@ -107,12 +116,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from "@/Auth/user";
+import axios from 'axios'
+import api from "../api/AuthIndex";
 
 const router = useRouter()
-const userStore = useUserStore()
 
 const formData = ref({
   id: '',
@@ -121,11 +130,58 @@ const formData = ref({
   email: ''
 })
 
+const errors = ref({
+  id: '',
+  password: '',
+  name: '',
+  email: ''
+})
+
+const validateField = (field) => {
+  errors.value[field] = ''
+  
+  switch (field) {
+    case 'id':
+      if (formData.value.id.length < 4) {
+        errors.value.id = '아이디는 4자 이상이어야 합니다.'
+      }
+      break
+    case 'password':
+      if (formData.value.password.length < 8) {
+        errors.value.password = '비밀번호는 8자 이상이어야 합니다.'
+      }
+      break
+    case 'name':
+      if (formData.value.name.length < 2) {
+        errors.value.name = '이름은 2자 이상이어야 합니다.'
+      }
+      break
+    case 'email':
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(formData.value.email)) {
+        errors.value.email = '유효한 이메일 주소를 입력해주세요.'
+      }
+      break
+  }
+}
+
+const isFormValid = computed(() => {
+  return Object.values(errors.value).every(error => error === '') &&
+         Object.values(formData.value).every(value => value !== '')
+})
+
 const handleSubmit = async () => {
+  if (!isFormValid.value) {
+    alert('모든 필드를 올바르게 입력해주세요.')
+    return
+  }
+
   try {
-    await userStore.register(formData.value)
-    alert('회원가입이 완료되었습니다.')
-    router.push('/login')
+    const response = await axios.post('http://localhost:8080/api/user/join', formData.value)
+    if (response.status === 201) {
+      alert('회원가입이 완료되었습니다.')
+      router.push('user/login')
+    }
   } catch (error) {
     console.error('회원가입 실패:', error)
     alert('회원가입에 실패했습니다. 다시 시도해주세요.')
