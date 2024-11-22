@@ -2,14 +2,22 @@
   <div class="container mx-auto p-4 mt-16">
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-2xl font-bold">여행 계획</h1>
-      <button @click="goToSearch" 
-              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-        여행지 추가하기
-      </button>
+      <div class="flex gap-2">
+        <button @click="getRecommendations" 
+                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                :disabled="!planStore.selectedSpots.length">
+          주변 명소 추천
+        </button>
+        <button @click="goToSearch" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+          여행지 추가하기
+        </button>
+      </div>
     </div>
+    
     <div class="flex gap-4">
       <!-- 좌측: 선택된 여행지 목록 -->
-      <div class="w-1/3">
+      <div class="w-1/4">
         <draggable 
           v-model="planStore.selectedSpots"
           @end="handleDragEnd"
@@ -36,11 +44,44 @@
         </div>
       </div>
 
-      <!-- 우측: 지도 -->
-      <div class="w-2/3">
+      <!-- 중앙: 지도 -->
+      <div :class="{'w-2/4': showChat, 'w-3/4': !showChat}" class="transition-all duration-300">
         <div id="map" class="w-full h-[600px] rounded-lg shadow-md"></div>
       </div>
+
+      <!-- 우측: 추천 채팅창 -->
+      <div v-if="showChat" class="w-1/4 transition-all duration-300">
+        <div class="bg-white rounded-lg shadow-lg h-[600px] flex flex-col">
+          <div class="flex justify-between items-center p-4 border-b">
+            <div class="flex items-center gap-2">
+              <h3 class="font-bold">여행지 추천</h3>
+              <span class="beta-tag">Beta</span>
+            </div>
+            <button @click="closeChat" class="text-gray-500 hover:text-gray-700">
+              ✕
+            </button>
+          </div>
+          <div class="flex-1 overflow-y-auto p-4" ref="chatContainer">
+            <div v-for="(message, index) in messages" 
+                 :key="index" 
+                 class="mb-4">
+              <div class="p-3 rounded-lg bg-gray-100">
+                <div v-if="message.loading" class="flex gap-1">
+                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" 
+                       style="animation-delay: 0.2s"></div>
+                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" 
+                       style="animation-delay: 0.4s"></div>
+                </div>
+                <div v-else v-html="message.content"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- 하단 버튼 -->
     <div class="mt-6 flex justify-end space-x-4">
       <button @click="savePlan" 
               class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
@@ -48,12 +89,11 @@
       </button>
     </div>
   </div>
-  
 </template>
 
 <script>
 import { usePlanStore } from "@/plan/planStore";
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, nextTick } from 'vue';
 import draggable from 'vuedraggable';
 import { useRouter, useRoute } from 'vue-router';
 
@@ -68,6 +108,78 @@ export default {
     const markers = ref([]);
     const router = useRouter();
     const route = useRoute();
+    const showChat = ref(false);
+    const messages = ref([]);
+    const socket = ref(null);
+    const chatContainer = ref(null);
+
+    const initWebSocket = () => {
+      const ws = new WebSocket('ws://localhost:8080/trip-recommendation');
+      
+      ws.onopen = () => {
+        console.log('WebSocket 연결 성공');
+        const spots = planStore.selectedSpots.map(spot => spot.title);
+        ws.send(JSON.stringify({ spots }));
+      };
+      
+      ws.onmessage = (event) => {
+        const lastMessage = messages.value[messages.value.length - 1];
+        if (lastMessage && lastMessage.loading) {
+          lastMessage.loading = false;
+          lastMessage.content = event.data.replace(/\n/g, '<br>');
+        }
+        scrollToBottom();
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket 연결 종료');
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket 에러:', error);
+        alert('서버 연결에 실패했습니다.');
+      };
+
+      return ws;
+    };
+
+    const getRecommendations = () => {
+      if (!planStore.selectedSpots.length) {
+        alert('최소 한 개 이상의 여행지를 선택해주세요.');
+        return;
+      }
+
+      showChat.value = true;
+      messages.value.push({
+        content: '',
+        loading: true
+      });
+
+      if (!socket.value || socket.value.readyState !== WebSocket.OPEN) {
+        socket.value = initWebSocket();
+      } else {
+        const spots = planStore.selectedSpots.map(spot => spot.title);
+        socket.value.send(JSON.stringify({ spots }));
+      }
+      
+      scrollToBottom();
+    };
+
+    const scrollToBottom = async () => {
+      await nextTick();
+      if (chatContainer.value) {
+        chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+      }
+    };
+
+    const closeChat = () => {
+      showChat.value = false;
+      messages.value = [];
+      if (socket.value) {
+        socket.value.close();
+        socket.value = null;
+      }
+    };
 
     const removeSpot = (spotId) => {
       planStore.removeSelectedSpot(spotId);
@@ -81,18 +193,15 @@ export default {
     const updateMarkers = () => {
       if (!map.value || !window.kakao) return;
       
-      // 기존 마커 제거
       markers.value.forEach(marker => marker.setMap(null));
       markers.value = [];
 
-      // 새 마커 추가
       planStore.selectedSpots.forEach((spot, index) => {
         const marker = new window.kakao.maps.Marker({
           position: new window.kakao.maps.LatLng(spot.latitude, spot.longitude),
           map: map.value
         });
 
-        // 마커에 순서 표시
         const customOverlay = new window.kakao.maps.CustomOverlay({
           position: new window.kakao.maps.LatLng(spot.latitude, spot.longitude),
           content: `<div class="marker-label">${index + 1}</div>`,
@@ -124,13 +233,20 @@ export default {
       
       document.head.appendChild(script);
     });
+
+    onUnmounted(() => {
+      if (socket.value) {
+        socket.value.close();
+      }
+    });
+
     const goToSearch = () => {
       router.push({
         name: 'SearchView',
-        query: { planId: route.params.planId }  // 현재 planId를 쿼리 파라미터로 전달
+        query: { planId: route.params.planId }
       });
     };
-    // 계획 완료 처리 함수
+
     const savePlan = async () => {
       try {
         if (planStore.selectedSpots.length === 0) {
@@ -138,7 +254,6 @@ export default {
           return;
         }
 
-        // 선택된 여행지들을 순서대로 저장
         for (let i = 0; i < planStore.selectedSpots.length; i++) {
           const spot = planStore.selectedSpots[i];
           await planStore.selectPlace({
@@ -149,10 +264,7 @@ export default {
         }
 
         alert('여행 계획이 저장되었습니다.');
-        // 선택된 여행지 목록 초기화
         planStore.clearSelectedSpots();
-        
-        // 메인 페이지나 다른 페이지로 이동
         router.push('/');
       } catch (error) {
         console.error('계획 저장 실패:', error);
@@ -165,7 +277,12 @@ export default {
       removeSpot,
       handleDragEnd,
       goToSearch,
-      savePlan
+      savePlan,
+      showChat,
+      messages,
+      getRecommendations,
+      closeChat,
+      chatContainer
     };
   }
 };
@@ -189,5 +306,39 @@ export default {
 .sortable-drag {
   opacity: 0.9;
   background: #ffffff;
+}
+
+.beta-tag {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.7rem;
+  font-weight: bold;
+  background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  animation: pulse 2s infinite;
+  box-shadow: 0 2px 4px rgba(255, 107, 107, 0.2);
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
 }
 </style>
