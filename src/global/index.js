@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import NoticeView from '@/views/notice/NoticeView.vue'
-import SearchView from '@/views/SearchView.vue' 
-import HomeView from '@/views/HomeView.vue'  
-import UserJoinView from '@/views/UserJoinView.vue'
-import UserLoginView from '@/views/UserLoginView.vue'
-import NoticeWriteView from '../views/notice/NoticeWriteView.vue'
-import PlanView from '@/views/PlanView.vue';
+import NoticeView from "@/notice/view/NoticeView.vue"
+import SearchView from "@/plan/view/SearchView.vue"
+import HomeView from "./view/HomeView.vue"
+import UserJoinView from "@/Auth/view/UserJoinView.vue"
+import UserLoginView from "@/Auth/view/UserLoginView.vue"
+import NoticeWriteView from "@/notice/view/NoticeWriteView.vue"
+import PlanView from "@/plan/view/PlanView.vue"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,13 +23,12 @@ const router = createRouter({
     {
       path: '/notice/write',
       name: 'NoticeWrite',
-      component: NoticeWriteView,
-      meta: { requiresAuth: true }
+      component: NoticeWriteView
     },
     {
       path: '/notice/:noticeNo',
       name: 'NoticeDetail',
-      component: () => import('@/views/notice/NoticeDetailView.vue'),
+      component: () => import('@/notice/view/NoticeDetailView.vue'),
       props: true
     },
     {
@@ -37,7 +36,7 @@ const router = createRouter({
       name: 'NoticeModify',
       component: NoticeWriteView,
       props: true,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true } //페이지 이동 전 beforeEach에서 meta 확인 하고 로그인 안되어 있으면 로그인 페이지로 이동
     },
     {
       path: '/spot',
