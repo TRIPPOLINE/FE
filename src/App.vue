@@ -1,10 +1,10 @@
 <!-- src/App.vue -->
 <script setup>
 import { useRoute } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
-import NavigationBar from '@/components/NavigationBar.vue'; 
-import FooterBar from '@/components/FooterBar.vue';
-import { onMounted } from 'vue'
+import { useAuthStore } from "@/Auth/components/auth";
+import NavigationBar from "@/global/view/NavigationBar.vue";
+import FooterBar from "@/global/view/FooterBar.vue";
+import { onMounted } from 'vue';
 const route = useRoute();
 const authStore = useAuthStore();
 

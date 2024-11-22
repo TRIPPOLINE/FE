@@ -1,6 +1,6 @@
 // auth.js
 import { defineStore } from 'pinia'
-import { login, setAuthToken } from '@/Auth/api/Index'
+import { login, setAuthToken } from '@/Auth/api/AuthIndex'
 import { jwtDecode } from 'jwt-decode'  // JWT 디코딩 
 
 export const useAuthStore = defineStore('auth', {

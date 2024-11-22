@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import NavigationBar from '@/components/NavigationBar.vue'
+import NavigationBar from "@/global/view/NavigationBar.vue";
 export default {
   name: 'HomeView',
   components: {

@@ -1,4 +1,4 @@
-//auth/api/index.js
+//auth/api/AuthIndex.js
 import axios from 'axios';
 
 

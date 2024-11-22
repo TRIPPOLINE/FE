@@ -1,5 +1,5 @@
-import api from '@/Auth/api/Index';
-import { useAuth } from './AuthContext';
+import api from "../api/AuthIndex";
+import { useAuth } from "@/Auth/context/AuthContext";
 
 const setupInterceptors = () => {
   const { refreshAccessToken, logoutUser } = useAuth();

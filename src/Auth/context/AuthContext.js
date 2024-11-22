@@ -1,5 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { setAuthToken, login, refreshToken } from './api';
+// import { setAuthToken } from "../api/AuthIndex";
+// import { login } from "../api/AuthIndex";
+// import { reissueToken } from "../api/AuthIndex";
+import { setAuthToken, login, reissueToken } from "@/Auth/api/AuthIndex";
 
 const AuthContext = createContext(null);
 
@@ -38,7 +41,7 @@ export const AuthProvider = ({ children }) => {
 
   const refreshAccessToken = async () => {
     try {
-      const response = await refreshToken(refreshTokenValue);
+      const response = await reissueToken(refreshTokenValue);
       setAccessToken(response.accessToken);
       localStorage.setItem('accessToken', response.accessToken);
       return response.accessToken;
