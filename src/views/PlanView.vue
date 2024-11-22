@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto p-4">
+  <div class="container mx-auto p-4 mt-16">
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-2xl font-bold">여행 계획</h1>
       <button @click="goToSearch" 
