@@ -1,4 +1,6 @@
+//auth/api/index.js
 import axios from 'axios';
+
 
 const API_URL = 'http://localhost:8080/api';
 
@@ -8,6 +10,20 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// 요청 인터셉터 추가
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 export const setAuthToken = (token) => {
   console.log('setAuthToken called with token:', token);
