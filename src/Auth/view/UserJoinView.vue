@@ -25,7 +25,6 @@
                 required 
                 class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
                 placeholder="아이디를 입력하세요"
-                @blur="validateField('id')"
               >
               <p v-if="errors.id" class="mt-2 text-sm text-red-600">{{ errors.id }}</p>
             </div>
@@ -43,7 +42,6 @@
                 required 
                 class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
                 placeholder="비밀번호를 입력하세요"
-                @blur="validateField('password')"
               >
               <p v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password }}</p>
             </div>
@@ -61,7 +59,6 @@
                 required 
                 class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
                 placeholder="이름을 입력하세요"
-                @blur="validateField('name')"
               >
               <p v-if="errors.name" class="mt-2 text-sm text-red-600">{{ errors.name }}</p>
             </div>
@@ -79,7 +76,6 @@
                 required 
                 class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
                 placeholder="이메일을 입력하세요"
-                @blur="validateField('email')"
               >
               <p v-if="errors.email" class="mt-2 text-sm text-red-600">{{ errors.email }}</p>
             </div>
@@ -116,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import api from "../api/AuthIndex";
@@ -147,13 +143,15 @@ const validateField = (field) => {
       }
       break
     case 'password':
-      if (formData.value.password.length < 8) {
-        errors.value.password = '비밀번호는 8자 이상이어야 합니다.'
+      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/
+      if (!passwordRegex.test(formData.value.password)) {
+        errors.value.password = '비밀번호는 영문자와 숫자를 포함하여 8자 이상이어야 합니다.'
       }
       break
     case 'name':
-      if (formData.value.name.length < 2) {
-        errors.value.name = '이름은 2자 이상이어야 합니다.'
+      const nameRegex = /^[가-힣a-zA-Z]+$/
+      if (!nameRegex.test(formData.value.name)) {
+        errors.value.name = '이름은 한글 또는 영문만 사용 가능합니다.'
       }
       break
     case 'email':
@@ -164,6 +162,12 @@ const validateField = (field) => {
       break
   }
 }
+
+// 각 필드에 대한 watch 설정
+watch(() => formData.value.id, () => validateField('id'))
+watch(() => formData.value.password, () => validateField('password'))
+watch(() => formData.value.name, () => validateField('name'))
+watch(() => formData.value.email, () => validateField('email'))
 
 const isFormValid = computed(() => {
   return Object.values(errors.value).every(error => error === '') &&
@@ -180,7 +184,7 @@ const handleSubmit = async () => {
     const response = await axios.post('http://localhost:8080/api/user/join', formData.value)
     if (response.status === 201) {
       alert('회원가입이 완료되었습니다.')
-      router.push('user/login')
+      router.push({ name: 'userLogin' })
     }
   } catch (error) {
     console.error('회원가입 실패:', error)
