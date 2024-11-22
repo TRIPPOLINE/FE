@@ -109,7 +109,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from "@/Auth/user";
 
 const router = useRouter()
 const userStore = useUserStore()
