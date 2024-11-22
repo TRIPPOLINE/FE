@@ -1,15 +1,15 @@
 // stores/planStore.js
 import { defineStore } from 'pinia';
 import axios from 'axios';
-import api from "@/Auth/api/AuthIndex";
 
-// const apiClient = axios.create({
-//   baseURL: 'http://localhost:8080/api/plan',
-//   timeout: 10000,
-//   headers: {
-//     'Content-Type': 'application/json',
-//   },
-// });
+const apiClient = axios.create({
+  baseURL: 'http://localhost:8080/api/plan',
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': localStorage.getItem('accessToken')
+  },
+});
 
 export const usePlanStore = defineStore('plan', {
   state: () => ({
