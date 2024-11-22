@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import NoticeView from '@/views/notice/NoticeView.vue'
 import SearchView from '@/views/SearchView.vue' 
 import HomeView from '@/views/HomeView.vue'  
-
 import UserJoinView from '@/views/UserJoinView.vue'
 import UserLoginView from '@/views/UserLoginView.vue'
 import NoticeWriteView from '../views/notice/NoticeWriteView.vue'
@@ -12,20 +11,20 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-     path: '/',
-     name: 'home',
-     component: HomeView
+      path: '/',
+      name: 'home',
+      component: HomeView
     },
     {
       path: '/notice',
       name: 'NoticeList',
       component: NoticeView
-      
     },
     {
       path: '/notice/write',
       name: 'NoticeWrite',
-      component: NoticeWriteView
+      component: NoticeWriteView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/notice/:noticeNo',
@@ -37,12 +36,14 @@ const router = createRouter({
       path: '/notice/modify/:noticeNo',
       name: 'NoticeModify',
       component: NoticeWriteView,
-      props: true
+      props: true,
+      meta: { requiresAuth: true }
     },
     {
       path: '/spot',
       name: 'spot',
-      component: SearchView
+      component: SearchView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/user/join',
@@ -58,19 +59,24 @@ const router = createRouter({
       path: '/plan/:planId',
       name: 'PlanView',
       component: PlanView,
-      props: true
+      props: true,
+      meta: { requiresAuth: true }
     },
     {
       path: '/search',
       name: 'SearchView',
       component: SearchView
-    },
-    {
-      path: '/plan/:planId',
-      name: 'PlanView',
-      component: PlanView
     }
   ]
+})
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = localStorage.getItem('accessToken'); 
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: 'userLogin' });
+  } else {
+    next();
+  }
 })
 
 export default router
