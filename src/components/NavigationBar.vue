@@ -24,14 +24,23 @@
           </router-link>
         </nav>
         
-        <!-- 회원가입/로그인 버튼 -->
+        <!-- 회원가입/로그인/로그아웃 버튼 -->
         <div class="flex space-x-2">
-          <router-link to="/user/join" :class="['login-button text-sm', isHome ? 'text-white border-white' : 'text-gray-600 border-gray-600']">
-            회원가입
-          </router-link>
-          <router-link to="/user/login" :class="['login-button text-sm', isHome ? 'text-white border-white' : 'text-gray-600 border-gray-600']">
-            로그인
-          </router-link>
+          <template v-if="!isLoggedIn">
+            <router-link to="/user/join" :class="['login-button text-sm', isHome ? 'text-white border-white' : 'text-gray-600 border-gray-600']">
+              회원가입
+            </router-link>
+            <router-link to="/user/login" :class="['login-button text-sm', isHome ? 'text-white border-white' : 'text-gray-600 border-gray-600']">
+              로그인
+            </router-link>
+          </template>
+          <button 
+            v-else 
+            @click="handleLogout"
+            :class="['login-button text-sm', isHome ? 'text-white border-white' : 'text-gray-600 border-gray-600']"
+          >
+            로그아웃
+          </button>
         </div>
       </div>
     </div>
@@ -39,11 +48,32 @@
 </template>
 
 <script>
+import { useAuthStore } from '@/stores/auth'
+import { computed } from 'vue'
+
 export default {
   name: 'NavigationBar',
   computed: {
     isHome() {
       return this.$route.path === '/';
+    }
+  },
+  setup() {
+    const authStore = useAuthStore()
+
+    const isLoggedIn = computed(() => {
+      return localStorage.getItem('accessToken') && localStorage.getItem('refreshToken')
+    })
+
+    const handleLogout = () => {
+      authStore.logout()
+      // 필요한 경우 로그아웃 후 홈으로 리다이렉트
+      window.location.href = '/'
+    }
+
+    return {
+      isLoggedIn,
+      handleLogout
     }
   }
 };

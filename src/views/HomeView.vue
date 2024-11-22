@@ -11,7 +11,6 @@
       <!-- 어두운 오버레이 -->
       <div class="absolute inset-0 bg-black bg-opacity-40"></div>
     </div>
-    <NavigationBar />
 
     <!-- 텍스트 콘텐츠 -->
     <div class="absolute inset-0 flex flex-col justify-center pl-16 sm:pl-32">
