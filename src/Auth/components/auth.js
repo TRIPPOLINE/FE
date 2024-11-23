@@ -1,7 +1,7 @@
 // auth.js
 import { defineStore } from 'pinia'
 import { login, setAuthToken } from '@/Auth/api/AuthIndex'
-import { jwtDecode } from 'jwt-decode'  // JWT 디코딩 
+import { jwtDecode } from 'jwt-decode'  // JWT 디코딩
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -11,7 +11,7 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: false,
   }),
 
-  
+
   getters: {
     // 사용자 id를 전역적으로 사용 목적
     userId() {
@@ -52,7 +52,7 @@ export const useAuthStore = defineStore('auth', {
         };
 
           roleId: decoded.role
-        };
+
         this.isAuthenticated = true;
 
         return response;
@@ -65,13 +65,13 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       this.accessToken = null;
       this.refreshToken = null;
-      this.isAuthenticated = false; 
+      this.isAuthenticated = false;
 
       setAuthToken(null);
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
     },
-  
+
 
     initializeAuth() {
       const accessToken = localStorage.getItem('accessToken');

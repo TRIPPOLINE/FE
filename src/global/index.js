@@ -62,9 +62,12 @@ const router = createRouter({
     {
       path: '/plan/:planId',
       name: 'PlanView',
-      component: PlanView,
-      meta: { requiresAuth: true }
-      props: true
+      component: PlanView
+    },
+    {
+      path: '/review',
+      name: 'ReviewList',
+      component: ReviewView
     },
     {
       path: '/search',
@@ -75,27 +78,13 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('accessToken'); 
+  const isAuthenticated = localStorage.getItem('accessToken');
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'userLogin' });
   } else {
     next();
   }
-})
-    },
-    {
-      path: '/plan/:planId',
-      name: 'PlanView',
-      component: PlanView
-    },
-    {
-      path: '/review',
-      name: 'ReviewList',
-      component: ReviewView
-      
-    },
-  ]
-})
+});
 
 
 export default router
