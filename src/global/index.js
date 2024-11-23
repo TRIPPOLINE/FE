@@ -9,6 +9,7 @@ import UserLoginView from "@/Auth/view/UserLoginView.vue"
 import NoticeWriteView from "@/notice/view/NoticeWriteView.vue"
 import PlanView from "@/plan/view/PlanView.vue"
 import ReviewView from "@/review/view/ReviewView.vue"
+import MyPageView from "@/mypage/view/MyPageView.vue"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -73,6 +74,12 @@ const router = createRouter({
       path: '/search',
       name: 'SearchView',
       component: SearchView
+    },
+    // 마이페이지
+    {
+      path: '/user/mypage',
+      name: 'MyPage',
+      component: MyPageView
     }
   ]
 })
