@@ -19,6 +19,9 @@
           <router-link to="/spot" :class="['banner-button text-sm', isHome ? 'text-white' : 'text-gray-600']">
             여행지 검색하기
           </router-link>
+          <router-link to="/review" :class="['banner-button text-sm', isHome ? 'text-white' : 'text-gray-600']">
+            리뷰
+          </router-link>
           <router-link to="/notice" :class="['banner-button text-sm', isHome ? 'text-white' : 'text-gray-600']">
             공지사항
           </router-link>
