@@ -1,14 +1,30 @@
 // stores/noticeStore.js
 import { defineStore } from 'pinia';
-import axios from 'axios';
 
-const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
+//import axios from 'axios';
+import api from "@/Auth/api/AuthIndex";
+
+// const apiClient = axios.create({
+//   baseURL: 'http://localhost:8081/api',
+//   timeout: 10000,
+//   headers: {
+//     'Content-Type': 'application/json',
+//   },
+// });
+
+// 요청 인터셉터 추가
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
   },
-});
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 export const useNoticeStore = defineStore('notice', {
   state: () => ({
@@ -21,7 +37,8 @@ export const useNoticeStore = defineStore('notice', {
   actions: {
     async fetchNotices(page = 1) {
       try {
-        const response = await apiClient.get('/notice/list', {
+        const response = await api.get('/notice/list', {
+
           params: {
             page,
             size: this.sizePerPage
@@ -40,7 +57,8 @@ export const useNoticeStore = defineStore('notice', {
     },
     async fetchNotices(page = 1) {
       try {
-        const response = await apiClient.get('/notice/search', {
+        const response = await api.get('/notice/search', {
+
           params: {
             page,
             size: this.sizePerPage,
@@ -69,11 +87,21 @@ export const useNoticeStore = defineStore('notice', {
         throw error;
       }
     },
+    // async fetchNotice(noticeNo) {
+    //   try {
+    //     const response = await apiClient.get(`/notice/modify/${noticeNo}`);
+    //     return response.data;
+    //   } catch (error) {
+    //     console.error('공지사항 조회 실패:', error);
+    //     throw error;
+    //   }
+    // },
+    
 
     // 공지사항 수정 액션 추가
     async modifyNotice(noticeData) {
       try {
-        const response = await apiClient.post(`/notice/modify/${noticeData.noticeNo}`, noticeData);
+        const response = await api.post(`/notice/modify/${noticeData.noticeNo}`, noticeData);
         return response.data;
       } catch (error) {
         console.error('공지사항 수정 실패:', error);
@@ -84,7 +112,7 @@ export const useNoticeStore = defineStore('notice', {
     // 공지사항 삭제 액션 추가
     async deleteNotice(noticeNo) {
       try {
-        await apiClient.post(`/notice/delete/${noticeNo}`);
+        await api.post(`/notice/delete/${noticeNo}`);
         await this.fetchNotices(this.currentPage); // 목록 새로고침
       } catch (error) {
         console.error('공지사항 삭제 실패:', error);
@@ -98,7 +126,7 @@ export const useNoticeStore = defineStore('notice', {
 
     async writeNotice(noticeData) {
       try {
-        const response = await apiClient.post('/notice/write', noticeData);
+        const response = await api.post('/notice/write', noticeData);
         return response.data;
       } catch (error) {
         console.error('공지사항 작성 실패:', error);
@@ -107,7 +135,7 @@ export const useNoticeStore = defineStore('notice', {
     },
     async fetchNotice(noticeNo) {
       try {
-        const response = await apiClient.get(`/notice/modify/${noticeNo}`);
+        const response = await api.get(`/notice/modify/${noticeNo}`);
         return response.data;
       } catch (error) {
         console.error('공지사항 조회 실패:', error);
@@ -117,7 +145,7 @@ export const useNoticeStore = defineStore('notice', {
 
     async modifyNotice(noticeData) {
       try {
-        await apiClient.post(`/notice/modify/${noticeData.noticeNo}`, noticeData);
+        await api.post(`/notice/modify/${noticeData.noticeNo}`, noticeData);
         return true;
       } catch (error) {
         console.error('공지사항 수정 실패:', error);
@@ -127,7 +155,7 @@ export const useNoticeStore = defineStore('notice', {
 
     async deleteNotice(noticeNo) {
       try {
-        await apiClient.post(`/notice/delete/${noticeNo}`);
+        await api.post(`/notice/delete/${noticeNo}`);
         return true;
       } catch (error) {
         console.error('공지사항 삭제 실패:', error);

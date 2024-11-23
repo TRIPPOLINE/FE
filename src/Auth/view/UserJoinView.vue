@@ -26,7 +26,9 @@
                 class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
                 placeholder="아이디를 입력하세요"
               >
+
               <p v-if="errors.id" class="mt-2 text-sm text-red-600">{{ errors.id }}</p>
+
             </div>
           </div>
 
@@ -43,7 +45,9 @@
                 class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
                 placeholder="비밀번호를 입력하세요"
               >
+
               <p v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password }}</p>
+
             </div>
           </div>
 
@@ -60,7 +64,9 @@
                 class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
                 placeholder="이름을 입력하세요"
               >
+
               <p v-if="errors.name" class="mt-2 text-sm text-red-600">{{ errors.name }}</p>
+
             </div>
           </div>
 
@@ -77,7 +83,9 @@
                 class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
                 placeholder="이메일을 입력하세요"
               >
+
               <p v-if="errors.email" class="mt-2 text-sm text-red-600">{{ errors.email }}</p>
+
             </div>
           </div>
 
@@ -86,7 +94,9 @@
             <button 
               type="submit" 
               class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+
               :disabled="!isFormValid"
+
             >
               회원가입
             </button>
@@ -112,12 +122,18 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
+
+
+
 import axios from 'axios'
 import api from "../api/AuthIndex";
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from "@/Auth/user";
 
 const router = useRouter()
+const userStore = useUserStore()
+
 
 const formData = ref({
   id: '',
@@ -125,6 +141,7 @@ const formData = ref({
   name: '',
   email: ''
 })
+
 
 const errors = ref({
   id: '',
@@ -186,6 +203,13 @@ const handleSubmit = async () => {
       alert('회원가입이 완료되었습니다.')
       router.push({ name: 'userLogin' })
     }
+
+const handleSubmit = async () => {
+  try {
+    await userStore.register(formData.value)
+    alert('회원가입이 완료되었습니다.')
+    router.push('/login')
+
   } catch (error) {
     console.error('회원가입 실패:', error)
     alert('회원가입에 실패했습니다. 다시 시도해주세요.')

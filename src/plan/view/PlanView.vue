@@ -2,6 +2,7 @@
   <div class="container mx-auto p-4 mt-16">
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-2xl font-bold">여행 계획</h1>
+
       <div class="flex gap-2">
         <button @click="getRecommendations" 
                 class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
@@ -18,6 +19,7 @@
     <div class="flex gap-4">
       <!-- 좌측: 선택된 여행지 목록 -->
       <div class="w-1/4">
+
         <draggable 
           v-model="planStore.selectedSpots"
           @end="handleDragEnd"
@@ -43,6 +45,7 @@
           선택된 여행지가 없습니다.
         </div>
       </div>
+
 
       <!-- 중앙: 지도 -->
       <div :class="{'w-2/4': showChat, 'w-3/4': !showChat}" class="transition-all duration-300">
@@ -82,6 +85,7 @@
     </div>
 
     <!-- 하단 버튼 -->
+
     <div class="mt-6 flex justify-end space-x-4">
       <button @click="savePlan" 
               class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
@@ -94,6 +98,7 @@
 <script>
 import { usePlanStore } from "@/plan/planStore";
 import { onMounted, onUnmounted, ref, nextTick } from 'vue';
+
 import draggable from 'vuedraggable';
 import { useRouter, useRoute } from 'vue-router';
 
@@ -233,7 +238,6 @@ export default {
       
       document.head.appendChild(script);
     });
-
     onUnmounted(() => {
       if (socket.value) {
         socket.value.close();
@@ -246,6 +250,7 @@ export default {
         query: { planId: route.params.planId }
       });
     };
+
 
     const savePlan = async () => {
       try {
@@ -264,7 +269,9 @@ export default {
         }
 
         alert('여행 계획이 저장되었습니다.');
+
         planStore.clearSelectedSpots();
+
         router.push('/');
       } catch (error) {
         console.error('계획 저장 실패:', error);
@@ -277,12 +284,14 @@ export default {
       removeSpot,
       handleDragEnd,
       goToSearch,
+
       savePlan,
       showChat,
       messages,
       getRecommendations,
       closeChat,
       chatContainer
+
     };
   }
 };
@@ -341,4 +350,5 @@ export default {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
 }
+
 </style>

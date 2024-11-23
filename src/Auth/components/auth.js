@@ -10,6 +10,26 @@ export const useAuthStore = defineStore('auth', {
     refreshToken: null,
     isAuthenticated: false,
   }),
+
+  
+  getters: {
+    // 사용자 id를 전역적으로 사용 목적
+    userId() {
+      if (this.accessToken) {
+        const decoded = jwtDecode(this.accessToken)
+        return decoded.userId
+      }
+      return null
+    },
+    // role id를 전역적으로 사용 목적
+    roleId() {
+      if (this.accessToken) {
+        const decoded = jwtDecode(this.accessToken)
+        return decoded.role
+      }
+      return null
+    }
+  },
   actions: {
     async login(credentials) {
       try {
@@ -17,15 +37,24 @@ export const useAuthStore = defineStore('auth', {
         // this.accessToken = response.accessToken;
         // this.refreshToken = response.refreshToken;
         localStorage.setItem('accessToken', response.accessToken);
-        localStorage.setItem('refreshToken', response.refreshToken)
+        localStorage.setItem('refreshToken', response.refreshToken);
+
+        // 헤더에 토큰 설정
         setAuthToken(response.accessToken);
         //this.user = { id: credentials.userId };
+
         // JWT에서 사용자 정보 디코딩
         const decoded = jwtDecode(response.accessToken);
         this.user = {
           id: decoded.userId,
+
           // 필요한 다른 사용자 정보도 JWT payload에서 추출
         };
+
+          roleId: decoded.role
+        };
+        this.isAuthenticated = true;
+
         return response;
       } catch (error) {
         console.error('Login failed:', error);
@@ -36,11 +65,14 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       this.accessToken = null;
       this.refreshToken = null;
+      this.isAuthenticated = false; 
+
       setAuthToken(null);
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
     },
   
+
     initializeAuth() {
       const accessToken = localStorage.getItem('accessToken');
       if (accessToken) {
@@ -52,5 +84,49 @@ export const useAuthStore = defineStore('auth', {
         };
       }
     },
+
+    // initializeAuth() {
+    //   const accessToken = localStorage.getItem('accessToken');
+    //   if (accessToken) {
+    //     this.accessToken = accessToken;
+    //     setAuthToken(accessToken);
+    //     const decoded = jwtDecode(accessToken);
+    //     this.user = {
+    //       id: decoded.userId,
+    //     };
+    //   }
+    // },
+    setAccessToken(token) {
+      this.accessToken = token
+      localStorage.setItem('accessToken', token)
+    },
+    clearAccessToken() {
+      this.accessToken = null
+      localStorage.removeItem('accessToken')
+    },
+    // initializeAuth() {
+    //   const token = localStorage.getItem('accessToken')
+    //   if (token) {
+    //     this.setAccessToken(token)
+    //   }
+    // }
+    initializeAuth() {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        try {
+          const decoded = jwtDecode(token);
+          this.accessToken = token;
+          this.user = {
+            id: decoded.userId,
+            roleId: decoded.role
+          };
+          this.isAuthenticated = true;
+          setAuthToken(token);
+        } catch (error) {
+          console.error('Token initialization failed:', error);
+          this.logout();
+        }
+      }
+    }
   },
 });
