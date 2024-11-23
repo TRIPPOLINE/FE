@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia'
 import { login, setAuthToken } from '@/Auth/api/AuthIndex'
 import { jwtDecode } from 'jwt-decode'  // JWT 디코딩 
-
+//
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
@@ -10,7 +10,6 @@ export const useAuthStore = defineStore('auth', {
     refreshToken: null,
     isAuthenticated: false,
   }),
-
   
   getters: {
     // 사용자 id를 전역적으로 사용 목적
@@ -28,7 +27,15 @@ export const useAuthStore = defineStore('auth', {
         return decoded.role
       }
       return null
-    }
+    },
+    // 사용자 이름 getter 추가
+    email() {
+      if (this.accessToken) {
+        const decoded = jwtDecode(this.accessToken)
+        return decoded.email
+      }
+      return null
+    },
   },
   actions: {
     async login(credentials) {
@@ -47,14 +54,10 @@ export const useAuthStore = defineStore('auth', {
         const decoded = jwtDecode(response.accessToken);
         this.user = {
           id: decoded.userId,
-
-          // 필요한 다른 사용자 정보도 JWT payload에서 추출
-        };
-
-          roleId: decoded.role
+          roleId: decoded.role,
+          email: decoded.email
         };
         this.isAuthenticated = true;
-
         return response;
       } catch (error) {
         console.error('Login failed:', error);
@@ -66,25 +69,11 @@ export const useAuthStore = defineStore('auth', {
       this.accessToken = null;
       this.refreshToken = null;
       this.isAuthenticated = false; 
-
       setAuthToken(null);
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
     },
   
-
-    initializeAuth() {
-      const accessToken = localStorage.getItem('accessToken');
-      if (accessToken) {
-        this.accessToken = accessToken;
-        setAuthToken(accessToken);
-        const decoded = jwtDecode(accessToken);
-        this.user = {
-          id: decoded.userId,
-        };
-      }
-    },
-
     // initializeAuth() {
     //   const accessToken = localStorage.getItem('accessToken');
     //   if (accessToken) {
@@ -118,7 +107,8 @@ export const useAuthStore = defineStore('auth', {
           this.accessToken = token;
           this.user = {
             id: decoded.userId,
-            roleId: decoded.role
+            role: decoded.role,
+            email: decoded.email
           };
           this.isAuthenticated = true;
           setAuthToken(token);

@@ -9,6 +9,7 @@ import UserLoginView from "@/Auth/view/UserLoginView.vue"
 import NoticeWriteView from "@/notice/view/NoticeWriteView.vue"
 import PlanView from "@/plan/view/PlanView.vue"
 import ReviewView from "@/review/view/ReviewView.vue"
+import MyPageView from "@/mypage/view/MyPageView.vue"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -62,40 +63,35 @@ const router = createRouter({
     {
       path: '/plan/:planId',
       name: 'PlanView',
-      component: PlanView,
-      meta: { requiresAuth: true }
-      props: true
-    },
-    {
-      path: '/search',
-      name: 'SearchView',
-      component: SearchView
-    }
-  ]
-})
-
-router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('accessToken'); 
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ name: 'userLogin' });
-  } else {
-    next();
-  }
-})
-    },
-    {
-      path: '/plan/:planId',
-      name: 'PlanView',
       component: PlanView
     },
     {
       path: '/review',
       name: 'ReviewList',
       component: ReviewView
-      
     },
+    {
+      path: '/search',
+      name: 'SearchView',
+      component: SearchView
+    },
+    // 마이페이지
+    {
+      path: '/user/mypage',
+      name: 'MyPage',
+      component: MyPageView
+    }
   ]
 })
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = localStorage.getItem('accessToken');
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: 'userLogin' });
+  } else {
+    next();
+  }
+});
 
 
 export default router
