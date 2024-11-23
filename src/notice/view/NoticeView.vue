@@ -87,14 +87,22 @@
       </div>
   
       <!-- 글쓰기 버튼 -->
-      <div class="fixed bottom-4 right-4 sm:bottom-8 sm:right-8">
+      <!-- <div class="fixed bottom-4 right-4 sm:bottom-8 sm:right-8">
         <button 
           @click="goToWritePage"
           class="px-4 py-2 sm:px-6 sm:py-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
         >
           <span>글쓰기</span>
         </button>
-      </div>
+      </div> -->
+      <div v-if="isAdmin" class="fixed bottom-4 right-4 sm:bottom-8 sm:right-8">
+  <button 
+    @click="goToWritePage"
+    class="px-4 py-2 sm:px-6 sm:py-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+  >
+    <span>글쓰기</span>
+  </button>
+</div>
     </div>
   </div>
 </template>
@@ -103,6 +111,7 @@
   import { ref, onMounted, computed, watch } from 'vue';
 import { useNoticeStore } from "@/notice/noticeStore";
   import { useRouter } from 'vue-router';
+  import { jwtDecode } from 'jwt-decode';
   
   const router = useRouter();
   const noticeStore = useNoticeStore();
@@ -171,8 +180,12 @@ const handleDelete = async (noticeNo) => {
   };
   
   const goToWritePage = () => {
-    router.push({ name: 'NoticeWrite' });
-  };
+  if (!isAdmin.value) {
+    alert('관리자만 글을 작성할 수 있습니다.');
+    return;
+  }
+  router.push({ name: 'NoticeWrite' });
+};
   
   onMounted(async () => {
   try {
@@ -197,6 +210,28 @@ const handleDelete = async (noticeNo) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('ko-KR');
   };
+
+  // 관리자만 글쓰기 버튼 보임
+  const isAdmin = computed(() => {
+  const token = localStorage.getItem('accessToken');
+  console.log('Current token:', token);
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      console.log('Decoded token:', decoded);
+      console.log('user ID:', decoded.userId);
+      console.log('Role ID:', decoded.role);
+      return decoded.role === 1;
+    } catch (error) {
+      console.error('Token decode error:', error);
+      return false;
+    }
+  }
+  return false;
+});
+
+
+  
   </script>
 
 <style>

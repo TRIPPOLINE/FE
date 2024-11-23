@@ -3,13 +3,13 @@ import { defineStore } from 'pinia';
 import axios from 'axios';
 import api from "@/Auth/api/AuthIndex";
 
-const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api/spot',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+// const apiClient = axios.create({
+//   baseURL: 'http://localhost:8081/api/spot',
+//   timeout: 10000,
+//   headers: {
+//     'Content-Type': 'application/json',
+//   },
+// });
 
 
 export const useSpotStore = defineStore('spot', {
