@@ -1,7 +1,8 @@
 //auth/api/AuthIndex.js
 import axios from 'axios';
+
 import { jwtDecode } from 'jwt-decode';
-//
+
 
 const API_URL = 'http://localhost:8080/api';
 
@@ -19,6 +20,7 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
 
+
       // 토큰에서 사용자 정보 추출 -> 전역에서 사용자 정보 사용
       try {
         const decoded = jwtDecode(token);
@@ -28,6 +30,7 @@ api.interceptors.request.use(
       } catch (error) {
         console.error('Token decode failed:', error);
       }
+
     }
     return config;
   },
@@ -41,6 +44,7 @@ export const setAuthToken = (token) => {
   if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     console.log('Authorization header set:', api.defaults.headers.common['Authorization']);
+
     // 토큰에서 사용자 정보 추출하여 헤더에 설정
     try {
       const decoded = jwtDecode(token);

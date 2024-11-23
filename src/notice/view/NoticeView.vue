@@ -94,6 +94,7 @@
         >
           <span>글쓰기</span>
         </button>
+
       </div> -->
       <div v-if="isAdmin" class="fixed bottom-4 right-4 sm:bottom-8 sm:right-8">
   <button 
@@ -103,6 +104,7 @@
     <span>글쓰기</span>
   </button>
 </div>
+
     </div>
   </div>
 </template>
@@ -231,7 +233,6 @@ const handleDelete = async (noticeNo) => {
 });
 
 
-  
   </script>
 
 <style>

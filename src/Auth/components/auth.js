@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia'
 import { login, setAuthToken } from '@/Auth/api/AuthIndex'
 import { jwtDecode } from 'jwt-decode'  // JWT 디코딩 
-//
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
@@ -10,6 +10,7 @@ export const useAuthStore = defineStore('auth', {
     refreshToken: null,
     isAuthenticated: false,
   }),
+
   
   getters: {
     // 사용자 id를 전역적으로 사용 목적
@@ -46,9 +47,14 @@ export const useAuthStore = defineStore('auth', {
         const decoded = jwtDecode(response.accessToken);
         this.user = {
           id: decoded.userId,
+
+          // 필요한 다른 사용자 정보도 JWT payload에서 추출
+        };
+
           roleId: decoded.role
         };
         this.isAuthenticated = true;
+
         return response;
       } catch (error) {
         console.error('Login failed:', error);
@@ -60,11 +66,25 @@ export const useAuthStore = defineStore('auth', {
       this.accessToken = null;
       this.refreshToken = null;
       this.isAuthenticated = false; 
+
       setAuthToken(null);
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
     },
   
+
+    initializeAuth() {
+      const accessToken = localStorage.getItem('accessToken');
+      if (accessToken) {
+        this.accessToken = accessToken;
+        setAuthToken(accessToken);
+        const decoded = jwtDecode(accessToken);
+        this.user = {
+          id: decoded.userId,
+        };
+      }
+    },
+
     // initializeAuth() {
     //   const accessToken = localStorage.getItem('accessToken');
     //   if (accessToken) {

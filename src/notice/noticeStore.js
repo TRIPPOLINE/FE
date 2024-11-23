@@ -1,5 +1,6 @@
 // stores/noticeStore.js
 import { defineStore } from 'pinia';
+
 //import axios from 'axios';
 import api from "@/Auth/api/AuthIndex";
 
@@ -37,6 +38,7 @@ export const useNoticeStore = defineStore('notice', {
     async fetchNotices(page = 1) {
       try {
         const response = await api.get('/notice/list', {
+
           params: {
             page,
             size: this.sizePerPage
@@ -56,6 +58,7 @@ export const useNoticeStore = defineStore('notice', {
     async fetchNotices(page = 1) {
       try {
         const response = await api.get('/notice/search', {
+
           params: {
             page,
             size: this.sizePerPage,
@@ -75,6 +78,15 @@ export const useNoticeStore = defineStore('notice', {
     },
 
     // 단일 공지사항 조회 액션 추가
+    async fetchNotice(noticeNo) {
+      try {
+        const response = await apiClient.get(`/notice/modify/${noticeNo}`);
+        return response.data;
+      } catch (error) {
+        console.error('공지사항 조회 실패:', error);
+        throw error;
+      }
+    },
     // async fetchNotice(noticeNo) {
     //   try {
     //     const response = await apiClient.get(`/notice/modify/${noticeNo}`);
