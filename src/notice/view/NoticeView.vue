@@ -74,7 +74,7 @@
       </div>
       
       <!-- 페이지네이션 -->
-      <div v-if="totalPages > 0" class="flex justify-center mt-4 sm:mt-6 gap-2">
+      <!--<div v-if="totalPages > 0" class="flex justify-center mt-4 sm:mt-6 gap-2">
         <button 
           v-for="page in totalPages" 
           :key="page"
@@ -84,7 +84,37 @@
         >
           {{ page }}
         </button>
-      </div>
+      </div>-->
+<div v-if="totalPages > 0" class="flex justify-center mt-4 sm:mt-6 gap-2">
+  <!-- 이전 화살표 -->
+  <button 
+    v-if="currentPageGroup > 1"
+    @click="changePage((currentPageGroup - 1) * 5)"
+    class="px-3 py-1 border rounded-md transition-colors text-sm text-gray-700 hover:bg-gray-50"
+  >
+    &lt;
+  </button>
+
+  <!-- 페이지 번호 -->
+  <button 
+    v-for="page in displayedPages" 
+    :key="page"
+    @click="changePage(page)"
+    class="px-3 py-1 border rounded-md transition-colors text-sm"
+    :class="currentPage === page ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 hover:bg-gray-50'"
+  >
+    {{ page }}
+  </button>
+
+  <!-- 다음 화살표 -->
+  <button 
+    v-if="currentPageGroup * 5 < totalPages"
+    @click="changePage(currentPageGroup * 5 + 1)"
+    class="px-3 py-1 border rounded-md transition-colors text-sm text-gray-700 hover:bg-gray-50"
+  >
+    &gt;
+  </button>
+</div>
   
       <!-- 글쓰기 버튼 -->
       <!-- <div class="fixed bottom-4 right-4 sm:bottom-8 sm:right-8">
@@ -228,6 +258,15 @@ const handleDelete = async (noticeNo) => {
     }
   }
   return false;
+});
+// 현재 페이지 그룹 계산 (1-10: 1, 11-20: 2, ...)
+const currentPageGroup = computed(() => Math.ceil(currentPage.value / 5));
+
+// 화면에 표시할 페이지 번호 배열
+const displayedPages = computed(() => {
+  const start = (currentPageGroup.value - 1) * 5 + 1;
+  const end = Math.min(currentPageGroup.value * 5, totalPages.value);
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 });
 
 
