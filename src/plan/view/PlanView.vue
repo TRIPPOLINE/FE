@@ -4,23 +4,23 @@
       <h1 class="text-2xl font-bold">여행 계획</h1>
 
       <div class="flex gap-2">
-        <button @click="getRecommendations" 
+        <button @click="getRecommendations"
                 class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                 :disabled="!planStore.selectedSpots.length">
           주변 명소 추천
         </button>
-        <button @click="goToSearch" 
+        <button @click="goToSearch"
                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
           여행지 추가하기
         </button>
       </div>
     </div>
-    
+
     <div class="flex gap-4">
       <!-- 좌측: 선택된 여행지 목록 -->
       <div class="w-1/4">
 
-        <draggable 
+        <draggable
           v-model="planStore.selectedSpots"
           @end="handleDragEnd"
           item-key="spotId"
@@ -33,7 +33,7 @@
                   <h3 class="text-lg font-semibold">{{ index + 1 }}. {{ element.title }}</h3>
                   <p class="text-sm text-gray-600">{{ element.frontAddress }}</p>
                 </div>
-                <button @click="removeSpot(element.spotId)" 
+                <button @click="removeSpot(element.spotId)"
                         class="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600">
                   삭제
                 </button>
@@ -65,15 +65,15 @@
             </button>
           </div>
           <div class="flex-1 overflow-y-auto p-4" ref="chatContainer">
-            <div v-for="(message, index) in messages" 
-                 :key="index" 
+            <div v-for="(message, index) in messages"
+                 :key="index"
                  class="mb-4">
               <div class="p-3 rounded-lg bg-gray-100">
                 <div v-if="message.loading" class="flex gap-1">
                   <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" 
+                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
                        style="animation-delay: 0.2s"></div>
-                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" 
+                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
                        style="animation-delay: 0.4s"></div>
                 </div>
                 <div v-else v-html="message.content"></div>
@@ -87,7 +87,7 @@
     <!-- 하단 버튼 -->
 
     <div class="mt-6 flex justify-end space-x-4">
-      <button @click="savePlan" 
+      <button @click="savePlan"
               class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
         계획 완료
       </button>
@@ -120,13 +120,13 @@ export default {
 
     const initWebSocket = () => {
       const ws = new WebSocket('ws://localhost:8080/trip-recommendation');
-      
+
       ws.onopen = () => {
         console.log('WebSocket 연결 성공');
         const spots = planStore.selectedSpots.map(spot => spot.title);
         ws.send(JSON.stringify({ spots }));
       };
-      
+
       ws.onmessage = (event) => {
         const lastMessage = messages.value[messages.value.length - 1];
         if (lastMessage && lastMessage.loading) {
@@ -166,7 +166,7 @@ export default {
         const spots = planStore.selectedSpots.map(spot => spot.title);
         socket.value.send(JSON.stringify({ spots }));
       }
-      
+
       scrollToBottom();
     };
 
@@ -197,7 +197,7 @@ export default {
 
     const updateMarkers = () => {
       if (!map.value || !window.kakao) return;
-      
+
       markers.value.forEach(marker => marker.setMap(null));
       markers.value = [];
 
@@ -223,7 +223,7 @@ export default {
       const script = document.createElement('script');
       script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=2bd4f83bc7309d38194a5a7f96c884e0&autoload=false`;
       script.async = true;
-      
+
       script.onload = () => {
         window.kakao.maps.load(() => {
           const container = document.getElementById('map');
@@ -235,7 +235,7 @@ export default {
           updateMarkers();
         });
       };
-      
+
       document.head.appendChild(script);
     });
     onUnmounted(() => {

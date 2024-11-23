@@ -111,7 +111,6 @@
   </div>
 </template>
 
-
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -143,7 +142,8 @@ const validateField = (field) => {
       }
       break;
     case 'password':
-      const passwordRegex = /^(?=.[A-Za-z])(?=.\d)[A-Za-z\d]{8,}$/;
+      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
       if (!passwordRegex.test(formData.value.password)) {
         errors.value.password = '비밀번호는 영문자와 숫자를 포함하여 8자 이상이어야 합니다.';
       }
@@ -155,7 +155,9 @@ const validateField = (field) => {
       }
       break;
     case 'email':
-      const emailRegex = /^[^\s@]+@[^\s@]+.[^\s@]+$/;
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
       if (!emailRegex.test(formData.value.email)) {
         errors.value.email = '유효한 이메일 주소를 입력해주세요.';
       }
