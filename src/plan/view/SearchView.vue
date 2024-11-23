@@ -1,202 +1,146 @@
-<!--searchView.vue-->
 <template>
   <div class="container mx-auto p-4">
-    <h1 class="text-2xl sm:text-3xl font-bold mb-4">여행지 검색하기</h1>
-    <!-- 여행 계획 시작하기 버튼 -->
-  <!--<button @click="startNewPlan" class="mb-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-    여행 계획 시작하기
-  </button>-->
-    
+    <h1 class="text-3xl font-bold mb-6 text-center">여행지 검색하기</h1>
+
     <!-- 검색 폼 -->
-    <div class="bg-white shadow-sm rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- 시도 선택 -->
-        <div>
+        <div class="relative">
           <label class="block text-sm font-medium text-gray-700 mb-2">시/도</label>
-          <select 
-            v-model="selectedSido"
-            @change="handleSidoChange"
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          >
+          <select v-model="selectedSido" @change="handleSidoChange"
+                  class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300">
             <option value="">선택하세요</option>
-            <option 
-              v-for="sido in sidos" 
-              :key="sido.sidoCode" 
-              :value="sido.sidoCode"
-            >
+            <option v-for="sido in sidos" :key="sido.sidoCode" :value="sido.sidoCode">
               {{ sido.sidoName }}
             </option>
           </select>
         </div>
 
         <!-- 시군구 선택 -->
-        <div>
+        <div class="relative">
           <label class="block text-sm font-medium text-gray-700 mb-2">시/군/구</label>
-          <select 
-            v-model="selectedSigungu"
-            :disabled="!selectedSido"
-            @change="handleSigunguChange"
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          >
+          <select v-model="selectedSigungu" :disabled="!selectedSido" @change="handleSigunguChange"
+                  class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300">
             <option value="">선택하세요</option>
-            <option 
-              v-for="sigungu in sigungus" 
-              :key="sigungu.gugunCode" 
-              :value="sigungu.gugunCode"
-            >
+            <option v-for="sigungu in sigungus" :key="sigungu.gugunCode" :value="sigungu.gugunCode">
               {{ sigungu.gugunName }}
             </option>
           </select>
         </div>
 
         <!-- 관광지 타입 선택 -->
-        <div>
+        <div class="relative">
           <label class="block text-sm font-medium text-gray-700 mb-2">관광지 타입</label>
-          <select 
-            v-model="selectedSpotType"
-            @change="handleSpotTypeChange"
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          >
+          <select v-model="selectedSpotType" @change="handleSpotTypeChange"
+                  class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300">
             <option value="">전체</option>
-            <option 
-              v-for="type in spotTypes" 
-              :key="type.spotTypeId" 
-              :value="type.spotTypeId"
-            >
+            <option v-for="type in spotTypes" :key="type.spotTypeId" :value="type.spotTypeId">
               {{ type.spotTypeName }}
             </option>
           </select>
         </div>
       </div>
 
-      <!-- 버튼 그룹 -->
-      <div class="mt-4 sm:mt-6 flex justify-end space-x-2">
-        <!-- 검색 버튼 -->
-        <button 
-          @click="searchSpots"
-          class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-        >
-          검색
-        </button>
+      <!-- 키워드 검색 입력 필드 -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">키워드 검색</label>
+        <input v-model="searchKeyword" type="text" placeholder="검색어를 입력하세요"
+              class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+      </div>
 
-        <!-- 초기화 버튼 -->
-        <button 
-          @click="resetSearch"
-          class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
-        >
+      <!-- 버튼 그룹 -->
+      <div class="mt-6 flex justify-end space-x-4">
+        <button @click="resetSearch"
+                class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors duration-300">
           초기화
+        </button>
+        <button @click="searchSpots"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-300">
+          검색
         </button>
       </div>
     </div>
 
     <!-- 검색 결과 및 지도 영역 -->
-    <div class="flex">
+    <div class="flex flex-col lg:flex-row">
       <!-- 검색 결과 -->
-      <div class="bg-white shadow-sm rounded-lg overflow-hidden w-full lg:w-1/3 mr-4 h-[500px] flex flex-col">
-  <!-- 검색 결과 리스트 부분 수정 -->
-<div v-if="spots.length > 0" class="flex-grow overflow-y-auto">
-  <div class="grid grid-cols-1 gap-4 p-4">
-    <div v-for="spot in spots" 
-         :key="spot.spotId" 
-         class="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-         @click="showSpotOnMap(spot)"> 
-         <img 
-  :src="spot.imagePath1 || '../placeholder-image.png'" 
-  :alt="spot.title" 
-  class="w-full h-40 object-cover"
->
-      <div class="p-4">
-        <h3 class="text-lg font-semibold mb-2">{{ spot.title }}</h3>
-        <p class="text-sm text-gray-600">{{ spot.frontAddress }}</p>
-        <button @click.stop="toggleSpotSelection(spot)" 
-                class="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
-          {{ isSpotSelected(spot) ? '선택 취소' : '선택하기' }}
-        </button>
+      <div class="bg-white shadow-lg rounded-lg overflow-hidden w-full lg:w-1/3 lg:mr-4 h-[500px] flex flex-col">
+        <div v-if="spots.length > 0" class="flex-grow overflow-y-auto">
+          <div class="grid grid-cols-1 gap-4 p-4">
+            <div v-for="spot in filteredSpots" :key="spot.spotId"
+                 class="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer transform hover:scale-105 transition-transform duration-300"
+                 @click="showSpotOnMap(spot)">
+              <img :src="spot.imagePath1 || '../placeholder-image.png'" :alt="spot.title"
+                   class="w-full h-40 object-cover">
+              <div class="p-4">
+                <h3 class="text-lg font-semibold mb-2">{{ spot.title }}</h3>
+                <p class="text-sm text-gray-600">{{ spot.frontAddress }}</p>
+                <button @click.stop="toggleSpotSelection(spot)"
+                        class="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-300">
+                  {{ isSpotSelected(spot) ? '선택 취소' : '선택하기' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else-if="hasSearched" class="p-4 text-center text-gray-500">
+          검색 결과가 없습니다.
+        </div>
+        <div v-else class="p-4 text-center text-gray-500">
+          검색 조건을 선택하고 검색 버튼을 눌러주세요.
+        </div>
       </div>
-    </div>
-  </div>
-</div>
-  <!-- 검색 결과 없음 -->
-  <div v-if="hasSearched && spots.length === 0" class="p-4 text-center text-gray-500">
-    검색 결과가 없습니다.
-  </div>
-  <!-- 초기 상태 메시지 -->
-  <div v-if="!hasSearched" class="p-4 text-center text-gray-500">
-    검색 조건을 선택하고 검색 버튼을 눌러주세요.
-  </div>
-</div>
 
       <!-- 지도 영역 -->
-      <div id="map" class="w-full h-auto lg:h-auto lg:w-full rounded-lg shadow-sm relative">
-  <div class="absolute top-4 right-4 z-10">
-    <button @click="zoomIn" class="bg-white p-2 rounded-t-md shadow">+</button>
-    <button @click="zoomOut" class="bg-white p-2 rounded-b-md shadow">-</button>
-  </div>
-</div>
+      <div id="map" class="w-full h-[500px] lg:w-2/3 rounded-lg shadow-lg relative mt-4 lg:mt-0">
+        <div class="absolute top-4 right-4 z-10 flex flex-col">
+          <button @click="zoomIn" class="bg-white p-2 rounded-t-md shadow hover:bg-gray-100 transition-colors duration-300">+</button>
+          <button @click="zoomOut" class="bg-white p-2 rounded-b-md shadow hover:bg-gray-100 transition-colors duration-300">-</button>
+        </div>
+      </div>
     </div>
 
-  </div>
-  <!-- 조건부 버튼 렌더링 -->
-
-  <!--<div class="mt-4">-->
-    <!-- 새 계획 생성 버튼 -->
-    <!--<button v-if="!route.query.planId" 
-            @click="showModal = true" 
-            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-      여행 계획 생성하기
-    </button>-->
-    
-    <!-- 계획 계속하기 버튼 -->
-    <!--<button v-else 
-            @click="continuePlan" 
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-      여행 계획 계속하기
-    </button>
-  </div>-->
-  <!-- 조건부 버튼 렌더링 -->
-
-<div class="mt-4">
-  <!-- 새 계획 생성 버튼 -->
-  <button v-if="!route.query.planId" 
-          @click="showModal = true" 
-          class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-    여행 계획 생성하기
-  </button>
-  <!-- 계획 계속하기 버튼 -->
-  <button v-else 
-          @click="continuePlan" 
-          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-    선택 완료
-  </button>
-</div>
-  <!-- 모달 컴포넌트 -->
-  <div v-if="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
-  <div class="bg-white p-5 rounded-lg shadow-xl relative">
-    <h2 class="text-xl font-bold mb-4">새 여행 계획 생성</h2>
-    <!--<div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-2">사용자 ID</label>
-      <p class="px-3 py-2 border rounded-md bg-gray-100">{{ authStore.user?.id  }}</p>
-    </div>-->
-    <div class="mb-4">
-    <label class="block text-sm font-medium text-gray-700 mb-2">사용자 ID</label>
-    <p class="px-3 py-2 border rounded-md bg-gray-100">
-      {{ getUserId }}
-    </p>
-  </div>
-    <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-2">여행 날짜</label>
-      <input v-model="newPlanTripAt" type="date" class="w-full px-3 py-2 border rounded-md">
-    </div>
-    <div class="flex justify-end space-x-2">
-      <button @click="cancelNewPlan" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors">
-        취소
+    <!-- 여행 계획 버튼 -->
+    <div class="mt-8 text-center">
+      <button v-if="!route.query.planId" @click="showModal = true"
+              class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-300 transform hover:scale-105">
+        여행 계획 생성하기
       </button>
-      <button @click="confirmNewPlan" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-        생성
+      <button v-else @click="continuePlan"
+              class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-300 transform hover:scale-105">
+        선택 완료
       </button>
     </div>
+
+    <!-- 모달 컴포넌트 -->
+    <transition name="fade">
+      <div v-if="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl relative max-w-md w-full">
+          <h2 class="text-2xl font-bold mb-6">새 여행 계획 생성</h2>
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">사용자 ID</label>
+            <p class="px-3 py-2 border rounded-md bg-gray-100">{{ getUserId }}</p>
+          </div>
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">여행 날짜</label>
+            <input v-model="newPlanTripAt" type="date"
+                   class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+          </div>
+          <div class="flex justify-end space-x-4">
+            <button @click="cancelNewPlan"
+                    class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors duration-300">
+              취소
+            </button>
+            <button @click="confirmNewPlan"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-300">
+              생성
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
-</div>
 </template>
 
 <script>
@@ -207,6 +151,7 @@ import { useSpotStore } from "@/plan/spotStore";
 import { usePlanStore } from "@/plan/planStore";
 import { useAuthStore } from "@/Auth/components/auth";
 import { jwtDecode } from 'jwt-decode';
+
 
 export default {
   name: 'SearchView',
@@ -219,6 +164,7 @@ export default {
     const selectedSpotType = ref('');
     const hasSearched = ref(false);
     const currentPlanId = ref('');
+    const searchKeyword = ref('');
 
     const sidos = ref([]);
     const sigungus = ref([]);
@@ -234,6 +180,15 @@ export default {
     const newPlanTripAt = ref('');
 
     let map = null;
+
+    const filteredSpots = computed(() => {
+      if (!searchKeyword.value) return spots.value;
+      const keyword = searchKeyword.value.toLowerCase();
+      return spots.value.filter(spot =>
+        spot.title.toLowerCase().includes(keyword) ||
+        spot.frontAddress.toLowerCase().includes(keyword)
+      );
+    });
 
     const handleSidoChange = async (e) => {
       const value = e.target.value
@@ -282,44 +237,49 @@ export default {
   //   }
   // }
     //   };
+
     const searchSpots = async () => {
-  if (!selectedSido.value || !selectedSigungu.value) return;
-  
+  if (!selectedSido.value) {
+    alert('시/도를 선택해주세요.');
+    return;
+  }
+
   hasSearched.value = true;
-  const contentTypeId = selectedSpotType.value || null;
-  
-  await spotStore.searchSpots({
-    areaCode: selectedSido.value,
-    siGunGuCode: selectedSigungu.value,
-    contentTypeId: contentTypeId
-  });
-  
-  spots.value = spotStore.spots;
-  
-  if (map && window.kakao && window.kakao.maps) {
-    clearMarkers(); // 기존 마커 제거
-    
-    // 검색 결과의 모든 지점을 포함하는 영역 계산
-    const bounds = new window.kakao.maps.LatLngBounds();
-    
-    // 모든 검색 결과에 마커 추가 및 영역 확장
-    spots.value.forEach(spot => {
-      const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
-      bounds.extend(position);
-      addMarker(spot);
+  try {
+    const response = await spotStore.searchSpots({
+      areaCode: selectedSido.value,
+      siGunGuCode: selectedSigungu.value || null,  // 시군구가 선택되지 않았을 때 null로 설정
+      contentTypeId: selectedSpotType.value || null,
+      keyword: searchKeyword.value
     });
-    
-    // 모든 마커가 보이도록 지도 영역 조정
-    if (spots.value.length > 0) {
-      map.setBounds(bounds);
-      
-      // 약간의 여유 공간을 위해 줌 레벨 조정
-      const level = map.getLevel();
-      map.setLevel(level + 1);
+
+    spots.value = response;
+    if (map && window.kakao && window.kakao.maps) {
+      clearMarkers();
+      const bounds = new window.kakao.maps.LatLngBounds();
+
+      if (Array.isArray(spots.value)) {
+        spots.value.forEach(spot => {
+          const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
+          bounds.extend(position);
+          addMarker(spot);
+        });
+
+        if (spots.value.length > 0) {
+          map.setBounds(bounds);
+          const level = map.getLevel();
+          map.setLevel(level + 1);
+        }
+      } else {
+        console.error('spots.value is not an array:', spots.value);
+      }
     }
+  } catch (error) {
+    console.error('검색 중 오류 발생:', error);
+    alert('검색 중 오류가 발생했습니다.');
+    spots.value = [];
   }
 };
-    
 
 const resetSearch = () => {
   selectedSido.value = '';
@@ -352,18 +312,18 @@ const clearMarkers = () => {
 //   });
 //   markers.push(marker);
 // };
-    
+
 const addMarker = (spot) => {
   if (!window.kakao || !window.kakao.maps) return;
-  
+
   const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
-  
+
   // 마커 생성
   const marker = new window.kakao.maps.Marker({
     position: position,
     map: map
   });
-  
+
   // 정보창 내용 구성
   const content = `
     <div class="p-2 bg-white rounded shadow-md">
@@ -371,22 +331,22 @@ const addMarker = (spot) => {
       <p class="text-sm text-gray-600">${spot.frontAddress}</p>
     </div>
   `;
-  
+
   // 정보창 생성
   const infowindow = new window.kakao.maps.InfoWindow({
     content: content
   });
-  
+
   // 마우스 오버 시 정보창 표시
   window.kakao.maps.event.addListener(marker, 'mouseover', function() {
     infowindow.open(map, marker);
   });
-  
+
   // 마우스 아웃 시 정보창 제거
   window.kakao.maps.event.addListener(marker, 'mouseout', function() {
     infowindow.close();
   });
-  
+
   markers.push(marker);
 };
     const showSpotOnMap = (spot) => {
@@ -419,15 +379,15 @@ const addMarker = (spot) => {
       const script = document.createElement('script');
       script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=2bd4f83bc7309d38194a5a7f96c884e0&autoload=false`;
       script.async = true;
-      
+
       script.onload = () => {
         window.kakao.maps.load(() => {
           initMap();
         });
       };
-      
+
       document.head.appendChild(script);
-      
+
       loadInitialData();
     });
 
@@ -451,10 +411,10 @@ const addMarker = (spot) => {
           spotStore.fetchSidos(),
           spotStore.fetchSpotTypes()
         ]);
-        
+
         sidos.value = spotStore.sidos;
         spotTypes.value = spotStore.spotTypes;
-        
+
       } catch (error) {
         console.error('초기 데이터 로드 실패:', error);
         alert('데이터 로드 중 오류가 발생했습니다.');
@@ -483,7 +443,7 @@ const addMarker = (spot) => {
 //       userId: 'admin', // 실제 사용자 ID로 대체해야 함
 //       tripAt: new Date().toISOString().split('T')[0] // 오늘 날짜로 설정
 //     });
-    
+
 //     currentPlanId.value = docRef.id;
 //     console.log(currentPlanId.value);
 //     alert('새 여행 계획이 생성되었습니다. 계획 ID: ' + currentPlanId.value);
@@ -662,13 +622,13 @@ const cancelNewPlan = () => {
   // try {
   //   const planData = {
   //     //userId: newPlanUserId.value,
-  //     userId: authStore.user?.id, 
+  //     userId: authStore.user?.id,
   //     tripAt: newPlanTripAt.value
   //   };
   //   console.log(planData.userId);
   //   const result = await planStore.insertPlan(planData);
   //   showModal.value = false;
-    
+
   //   // PlanView로 이동
   //   router.push({
   //     name: 'PlanView',
@@ -709,7 +669,7 @@ const cancelNewPlan = () => {
 
 
 
-  
+
 
 // 기존 여행 계획에 추가하는 경우
 const addAndReturnToPlan = async () => {
@@ -734,6 +694,8 @@ const addAndReturnToPlan = async () => {
 
 
     return {
+     searchKeyword,
+     filteredSpots,
      selectedSido,
      selectedSigungu,
      selectedSpotType,
@@ -779,5 +741,37 @@ const addAndReturnToPlan = async () => {
 }
 #map {
  height: 500px; /* 지도 높이를 설정합니다 */
+}
+scroll-area {
+  position: relative;
+  margin: auto;
+  width: 100%;
+  height: 500px;
+  overflow-y: auto;
+}
+
+/* Webkit 브라우저 (Chrome, Safari, Edge) 용 스타일 */
+.scroll-area::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-area::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.scroll-area::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.scroll-area::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Firefox 용 스타일 */
+.scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
 }
 </style>

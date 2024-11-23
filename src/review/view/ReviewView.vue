@@ -7,7 +7,7 @@
           v-model="searchQuery"
           @input="debounceSearch"
           type="text"
-          placeholder="여행지나 리뷰를 검색해보세요"
+          placeholder="관심있는 여행지를 검색해보세요"
           class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>

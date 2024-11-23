@@ -1,16 +1,6 @@
 // stores/spotStore.js
 import { defineStore } from 'pinia';
-import axios from 'axios';
 import api from "@/Auth/api/AuthIndex";
-
-// const apiClient = axios.create({
-//   baseURL: 'http://localhost:8081/api/spot',
-//   timeout: 10000,
-//   headers: {
-//     'Content-Type': 'application/json',
-//   },
-// });
-
 
 export const useSpotStore = defineStore('spot', {
   state: () => ({
@@ -26,9 +16,10 @@ export const useSpotStore = defineStore('spot', {
   actions: {
     async fetchSidos() {
       try {
-        console.log('Current headers:', api.defaults.headers.common);
+        console.log('Fetching sidos from:', api.defaults.baseURL + '/spot/sidos');
         const response = await api.get('/spot/sidos');
         this.sidos = response.data;
+        return this.sidos;
       } catch (error) {
         console.error('시도 목록 조회 실패:', error);
         throw error;
@@ -37,8 +28,10 @@ export const useSpotStore = defineStore('spot', {
 
     async fetchSigungus(sidoCode) {
       try {
+        console.log('Fetching sigungus for sidoCode:', sidoCode);
         const response = await api.get(`/spot/sigungus/${sidoCode}`);
-        return response.data;
+        this.sigungus = response.data;
+        return this.sigungus;
       } catch (error) {
         console.error('시군구 목록 조회 실패:', error);
         throw error;
@@ -47,30 +40,32 @@ export const useSpotStore = defineStore('spot', {
 
     async fetchSpotTypes() {
       try {
+        console.log('Fetching spot types');
         const response = await api.get('/spot/contenttypes');
-        return response.data;
+        this.spotTypes = response.data;
+        return this.spotTypes;
       } catch (error) {
         console.error('관광지 유형 조회 실패:', error);
         throw error;
       }
     },
 
-    async searchSpots({ areaCode, siGunGuCode, contentTypeId }) {
+    async searchSpots({ areaCode, siGunGuCode, contentTypeId, keyword }) {
       try {
-        console.log('areaCode:', areaCode);
-        console.log('siGunGuCode:', siGunGuCode);
-        console.log('contentTypeId:', contentTypeId);
-        
+        console.log('Searching spots with params:', { areaCode, siGunGuCode, contentTypeId, keyword });
         const response = await api.post('/spot/search', {
           areaCode,
-          siGunGuCode,
-          contentTypeId: contentTypeId || null
+          siGunGuCode: siGunGuCode || null,
+          contentTypeId: contentTypeId || null,
+          keyword: keyword || null
         });
-        
+
         this.spots = response.data;
-        return response.data;
+        console.log('Search results:', this.spots);
+        return this.spots;
       } catch (error) {
         console.error('검색 실패:', error);
+        this.spots = [];
         throw error;
       }
     }
