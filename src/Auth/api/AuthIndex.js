@@ -26,6 +26,7 @@ api.interceptors.request.use(
         const decoded = jwtDecode(token);
         config.headers['User-Id'] = decoded.userId;
         config.headers['Role-Id'] = decoded.role;
+        config.headers['Email'] = decoded.email;
         
       } catch (error) {
         console.error('Token decode failed:', error);
@@ -50,6 +51,7 @@ export const setAuthToken = (token) => {
       const decoded = jwtDecode(token);
       api.defaults.headers.common['User-Id'] = decoded.userId;
       api.defaults.headers.common['Role-Id'] = decoded.role;
+      api.defaults.headers.common['Email'] = decoded.email;
     } catch (error) {
       console.error('Token decode failed:', error);
     }

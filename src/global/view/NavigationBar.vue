@@ -27,8 +27,8 @@
           </router-link>
         </nav>
         
-        <!-- 회원가입/로그인/로그아웃 버튼 -->
         <div class="flex space-x-2">
+          <!-- 회원가입/로그인 -->
           <template v-if="!isLoggedIn">
             <router-link to="/user/join" :class="['login-button text-sm', isHome ? 'text-white border-white' : 'text-gray-600 border-gray-600']">
               회원가입
@@ -37,13 +37,15 @@
               로그인
             </router-link>
           </template>
-          <button 
-            v-else 
-            @click="handleLogout"
-            :class="['login-button text-sm', isHome ? 'text-white border-white' : 'text-gray-600 border-gray-600']"
-          >
-            로그아웃
-          </button>
+          <!-- 마이페이지/로그아웃 -->
+          <template v-else>
+            <router-link to="/user/mypage" :class="['login-button text-sm', isHome ? 'text-white border-white' : 'text-gray-600 border-gray-600']">
+            마이페이지
+            </router-link>
+            <button @click="handleLogout" :class="['login-button text-sm', isHome ? 'text-white border-white' : 'text-gray-600 border-gray-600']">
+              로그아웃
+            </button>
+          </template>
         </div>
       </div>
     </div>
@@ -53,7 +55,7 @@
 <script>
 import { computed } from 'vue'
 import { useAuthStore } from "@/Auth/components/auth";
-
+//
 export default {
   name: 'NavigationBar',
   computed: {
@@ -63,12 +65,12 @@ export default {
   },
   setup() {
     const authStore = useAuthStore()
+
     const isLoggedIn = computed(() => authStore.isAuthenticated)
 
     // const isLoggedIn = computed(() => {
     //   return localStorage.getItem('accessToken') && localStorage.getItem('refreshToken')
     // })
-
 
     const handleLogout = () => {
       authStore.logout()
