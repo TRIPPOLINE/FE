@@ -7,6 +7,7 @@ import UserJoinView from "@/Auth/view/UserJoinView.vue"
 import UserLoginView from "@/Auth/view/UserLoginView.vue"
 import NoticeWriteView from "@/notice/view/NoticeWriteView.vue"
 import PlanView from "@/plan/view/PlanView.vue"
+import ReviewView from "@/review/view/ReviewView.vue"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -69,7 +70,13 @@ const router = createRouter({
       path: '/plan/:planId',
       name: 'PlanView',
       component: PlanView
-    }
+    },
+    {
+      path: '/review',
+      name: 'ReviewList',
+      component: ReviewView
+      
+    },
   ]
 })
 
