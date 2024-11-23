@@ -1,9 +1,6 @@
-// auth.js
 import { defineStore } from 'pinia'
 import { login, setAuthToken } from '@/Auth/api/AuthIndex'
-
-import { jwtDecode } from 'jwt-decode'  // JWT 디코딩
-
+import { jwtDecode } from 'jwt-decode'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -14,7 +11,6 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   getters: {
-    // 사용자 id를 전역적으로 사용 목적
     userId() {
       if (this.accessToken) {
         const decoded = jwtDecode(this.accessToken)
@@ -22,7 +18,6 @@ export const useAuthStore = defineStore('auth', {
       }
       return null
     },
-    // role id를 전역적으로 사용 목적
     roleId() {
       if (this.accessToken) {
         const decoded = jwtDecode(this.accessToken)
@@ -30,7 +25,6 @@ export const useAuthStore = defineStore('auth', {
       }
       return null
     },
-    // 사용자 이름 getter 추가
     email() {
       if (this.accessToken) {
         const decoded = jwtDecode(this.accessToken)
@@ -39,30 +33,19 @@ export const useAuthStore = defineStore('auth', {
       return null
     },
   },
+
   actions: {
     async login(credentials) {
       try {
         const response = await login(credentials.userId, credentials.password);
-        // this.accessToken = response.accessToken;
-        // this.refreshToken = response.refreshToken;
         localStorage.setItem('accessToken', response.accessToken);
         localStorage.setItem('refreshToken', response.refreshToken);
 
-        // 헤더에 토큰 설정
         setAuthToken(response.accessToken);
-        //this.user = { id: credentials.userId };
 
-        // JWT에서 사용자 정보 디코딩
         const decoded = jwtDecode(response.accessToken);
         this.user = {
           id: decoded.userId,
-
-          // 필요한 다른 사용자 정보도 JWT payload에서 추출
-        };
-
-         
-
-
           roleId: decoded.role,
           email: decoded.email
         };
@@ -74,47 +57,27 @@ export const useAuthStore = defineStore('auth', {
         throw error;
       }
     },
+
     logout() {
       this.user = null;
       this.accessToken = null;
       this.refreshToken = null;
-
       this.isAuthenticated = false;
-
       setAuthToken(null);
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
     },
 
-
-
-  
-
-    // initializeAuth() {
-    //   const accessToken = localStorage.getItem('accessToken');
-    //   if (accessToken) {
-    //     this.accessToken = accessToken;
-    //     setAuthToken(accessToken);
-    //     const decoded = jwtDecode(accessToken);
-    //     this.user = {
-    //       id: decoded.userId,
-    //     };
-    //   }
-    // },
     setAccessToken(token) {
       this.accessToken = token
       localStorage.setItem('accessToken', token)
     },
+
     clearAccessToken() {
       this.accessToken = null
       localStorage.removeItem('accessToken')
     },
-    // initializeAuth() {
-    //   const token = localStorage.getItem('accessToken')
-    //   if (token) {
-    //     this.setAccessToken(token)
-    //   }
-    // }
+
     initializeAuth() {
       const token = localStorage.getItem('accessToken');
       if (token) {
