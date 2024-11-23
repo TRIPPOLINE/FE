@@ -5,6 +5,7 @@ import api from "@/Auth/api/AuthIndex";
 export const useMypageStore = defineStore('mypage', {
   state: () => ({
     profile: null,
+    user: null,
     plans: [],
     reviews: [],
     isLoading: false,
@@ -13,6 +14,7 @@ export const useMypageStore = defineStore('mypage', {
 
   getters: {
     hasProfile: (state) => !!state.profile,
+    hasUser: (state) => !!state.user,
   },
 
   actions: {
@@ -46,20 +48,47 @@ export const useMypageStore = defineStore('mypage', {
     },
 
     async modifyProfile(formData) {
-        this.isLoading = true;
-        try {
-          const response = await api.post('/profile/modify', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          });
-          this.profile = response.data;
-        } catch (error) {
-          this.error = error.message;
-          console.error('프로필 수정 실패:', error);
-          throw error;
-        } finally {
-          this.isLoading = false;
-        }
-      },
+      this.isLoading = true;
+      try {
+        const response = await api.post('/profile/modify', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        this.profile = response.data;
+      } catch (error) {
+        this.error = error.message;
+        console.error('프로필 수정 실패:', error);
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    async fetchUserInfo(userId) {
+      this.isLoading = true;
+      try {
+        const response = await api.get(`/user/select/${userId}`);
+        this.user = response.data;
+      } catch (error) {
+        this.error = error.message;
+        console.error('사용자 정보 조회 실패:', error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    async updateUserInfo(userData) {
+      this.isLoading = true;
+      try {
+        const response = await api.post(`/user/update/${userData.id}`, userData);
+        this.user = response.data;
+      } catch (error) {
+        this.error = error.message;
+        console.error('사용자 정보 수정 실패:', error);
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
 
     async fetchPlans(userId) {
       this.isLoading = true;
