@@ -59,6 +59,9 @@
                 class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-300">
           검색
         </button>
+        <button @click="searchNearbySpots" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-300">
+  현재 지도 위치로 검색
+</button>
       </div>
     </div>
 
@@ -403,6 +406,8 @@ const addMarker = (spot) => {
       window.kakao.maps.event.addListener(map, 'zoom_changed', function() {
         mapZoomLevel.value = map.getLevel();
       });
+  //      window.kakao.maps.event.addListener(map, 'dragend', searchNearbySpots);
+  // window.kakao.maps.event.addListener(map, 'zoom_changed', searchNearbySpots);
     };
 
     const loadInitialData = async () => {
@@ -691,7 +696,85 @@ const addAndReturnToPlan = async () => {
 //     const handleImageError = (e) => {
 //   e.target.src = '../placeholder-image.png';
 // };
+// const searchNearbySpots = async () => {
+//   if (!map) return;
+//   const bounds = map.getBounds();
+//   const ne = bounds.getNorthEast();
+//   const sw = bounds.getSouthWest();
 
+//   try {
+//     const response = await spotStore.searchNearbySpots({
+//       minLatitude: sw.La,
+//       maxLatitude: ne.La,
+//       minLongitude: sw.Ma,
+//       maxLongitude: ne.Ma,
+//       cursor: spots.value.length > 0 ? spots.value[spots.value.length - 1].spotId : null,
+//       limit: 20
+//     });
+//     if (response.spots.length > 0) {
+//       spots.value = [...spots.value, ...response.spots];
+//       clearMarkers();
+//       spots.value.forEach(spot => addMarker(spot));
+//     } else {
+//       alert('더 이상 검색 결과가 없습니다.');
+//     }
+//   } catch (error) {
+//     console.error('주변 관광지 검색 실패:', error);
+//     alert('주변 관광지 검색 중 오류가 발생했습니다.');
+//   }
+    // };
+//     const searchNearbySpots = async () => {
+//   if (!map) return;
+//   const bounds = map.getBounds();
+//   const ne = bounds.getNorthEast();
+//   const sw = bounds.getSouthWest();
+
+//   try {
+//     const response = await spotStore.searchNearbySpots({
+//       minLatitude: sw.getLat(),
+//       maxLatitude: ne.getLat(),
+//       minLongitude: sw.getLng(),
+//       maxLongitude: ne.getLng()
+//     });
+
+//     if (response.spots && Array.isArray(response.spots)) {
+//       spots.value = response.spots;
+//       console.log('확인', spots.value);
+//       clearMarkers();
+//       spots.value.forEach(spot => {
+//         addMarker(spot);
+//         console.log('Spot ID:', spot.spotId);
+//       });
+//     } else {
+//       console.error('Invalid response format:', response);
+//     }
+//   } catch (error) {
+//     console.error('주변 관광지 검색 실패:', error);
+//     alert('주변 관광지 검색 중 오류가 발생했습니다.');
+//   }
+    // };
+    const searchNearbySpots = async () => {
+      if (!map) return;
+      const bounds = map.getBounds();
+      const ne = bounds.getNorthEast();
+      const sw = bounds.getSouthWest();
+
+      try {
+        const response = await spotStore.searchNearbySpots({
+          minLatitude: sw.getLat(),
+          maxLatitude: ne.getLat(),
+          minLongitude: sw.getLng(),
+          maxLongitude: ne.getLng()
+        });
+
+        spots.value = response;
+        clearMarkers();
+        spots.value.forEach(spot => addMarker(spot));
+      } catch (error) {
+        console.error('주변 관광지 검색 실패:', error);
+        alert('주변 관광지 검색 중 오류가 발생했습니다.');
+      }
+    };
 
     return {
      searchKeyword,
@@ -728,8 +811,9 @@ const addAndReturnToPlan = async () => {
       continuePlan,
       route,
       addMarker,
-      getUserId
-      //handleImageError
+      getUserId,
+      //handleImageError,
+      searchNearbySpots
    };
  }
 };
