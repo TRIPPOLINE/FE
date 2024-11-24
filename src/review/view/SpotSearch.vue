@@ -1,7 +1,6 @@
 <template>
   <div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold">여행지 검색하기</h1>
-
+    <h1 class="text-2xl font-bold">리뷰 장소 선택하기</h1>
     <!-- 검색 폼 -->
     <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -70,27 +69,39 @@
           <div class="grid grid-cols-1 gap-4 p-4">
             <div v-for="spot in filteredSpots" :key="spot.spotId"
                  class="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer transform hover:scale-105 transition-transform duration-300"
-                 @click="showSpotOnMap(spot)">
+                 @click.prevent.stop="toggleSpotSelection(spot)">
               <img :src="spot.imagePath1 || '../placeholder-image.png'" :alt="spot.title"
                    class="w-full h-40 object-cover">
               <div class="p-4">
                 <h3 class="text-lg font-semibold mb-2">{{ spot.title }}</h3>
                 <p class="text-sm text-gray-600">{{ spot.frontAddress }}</p>
-                <button @click.stop="toggleSpotSelection(spot)"
-                        class="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-300">
+                <button @click.stop.prevent="toggleSpotSelection(spot)"
+                        class="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-300"
+                        :class="{ 'bg-gray-400 hover:bg-gray500': selectedSpot && selectedSpot.spotId !== spot.spotId }">
                   {{ isSpotSelected(spot) ? '선택 취소' : '선택하기' }}
                 </button>
               </div>
             </div>
           </div>
         </div>
-        <div v-else-if="hasSearched" class="p-4 text-center text-gray-500">
-          검색 결과가 없습니다.
-        </div>
-        <div v-else class="p-4 text-center text-gray-500">
-          검색 조건을 선택하고 검색 버튼을 눌러주세요.
-        </div>
-      </div>
+    <div v-else-if="hasSearched" class="p-4 text-center text-gray-500">
+      검색 결과가 없습니다.
+    </div>
+    <div v-else class="p-4 text-center text-gray-500">
+      검색 조건을 선택하고 검색 버튼을 눌러주세요.
+    </div>
+  </div>
+   <!-- 모달 컴포넌트 -->
+   <div v-if="showAlreadySelectedModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-xl">
+      <h3 class="text-lg font-semibold mb-4">알림</h3>
+      <p>이미 장소를 선택했습니다.</p>
+      <button @click="showAlreadySelectedModal = false" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        확인
+      </button>
+    </div>
+  </div>
+
 
       <!-- 지도 영역 -->
       <div id="map" class="w-full h-[500px] lg:w-2/3 rounded-lg shadow-lg relative mt-4 lg:mt-0">
@@ -101,45 +112,16 @@
       </div>
     </div>
 
-    <!-- 여행 계획 버튼 -->
-    <div class="mt-8 text-center">
-      <button v-if="!route.query.planId" @click="showModal = true"
-              class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-300 transform hover:scale-105">
-        여행 계획 생성하기
-      </button>
-      <button v-else @click="continuePlan"
-              class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-300 transform hover:scale-105">
-        선택 완료
-      </button>
-    </div>
+    <!-- 리뷰 작성 버튼 (고정 위치) -->
+    <div class="fixed bottom-8 right-8 z-50">
+    <button @click="goToReviewWrite"
+            class="bg-green-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-green-600 transition duration-300 flex items-center">
+      <i class="fas fa-pen mr-2"></i>리뷰 계속 작성하기
+    </button>
 
-    <!-- 모달 컴포넌트 -->
-    <transition name="fade">
-      <div v-if="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-lg shadow-xl relative max-w-md w-full">
-          <h2 class="text-2xl font-bold mb-6">새 여행 계획 생성</h2>
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">사용자 ID</label>
-            <p class="px-3 py-2 border rounded-md bg-gray-100">{{ getUserId }}</p>
-          </div>
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">여행 날짜</label>
-            <input v-model="newPlanTripAt" type="date"
-                   class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-          </div>
-          <div class="flex justify-end space-x-4">
-            <button @click="cancelNewPlan"
-                    class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors duration-300">
-              취소
-            </button>
-            <button @click="confirmNewPlan"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-300">
-              생성
-            </button>
-          </div>
-        </div>
-      </div>
-    </transition>
+</div>
+
+
   </div>
 </template>
 
@@ -165,6 +147,8 @@ export default {
     const hasSearched = ref(false);
     const currentPlanId = ref('');
     const searchKeyword = ref('');
+    const selectedSpot = ref(null);
+    const showAlreadySelectedModal = ref(false);
 
     const sidos = ref([]);
     const sigungus = ref([]);
@@ -180,6 +164,21 @@ export default {
     const newPlanTripAt = ref('');
 
     let map = null;
+
+    const goToReviewWrite = () => {
+      if (selectedSpot.value) {
+        console.log('Navigating with spot:', selectedSpot.value); // 디버깅용
+        router.push({
+          name: 'ReviewWrite',
+          params: {
+            spotId: selectedSpot.value.spotId,
+            spotTitle: selectedSpot.value.title
+          }
+        });
+      } else {
+        alert('리뷰를 작성할 장소를 선택해주세요.');
+      }
+    };
 
     const filteredSpots = computed(() => {
       if (!searchKeyword.value) return spots.value;
@@ -216,27 +215,7 @@ export default {
       console.log(selectedSpotType)
     };
 
-  //   const searchSpots = async () => {
-  // if (!selectedSido.value || !selectedSigungu.value) return;
-  // hasSearched.value = true;
-  // const contentTypeId = selectedSpotType.value || null;
 
-  // await spotStore.searchSpots({
-  //   areaCode: selectedSido.value,
-  //   siGunGuCode: selectedSigungu.value,
-  //   contentTypeId: contentTypeId
-  // });
-
-  // spots.value = spotStore.spots;
-
-  // if (map && window.kakao && window.kakao.maps) {
-  //   clearMarkers(); // 기존 마커 제거
-  //   spots.value.forEach(spot => addMarker(spot));
-  //   if (spots.value.length > 0) {
-  //     showSpotOnMap(spots.value[0]);
-  //   }
-  // }
-    //   };
 
     const searchSpots = async () => {
   if (!selectedSido.value) {
@@ -303,15 +282,7 @@ const clearMarkers = () => {
   markers = [];
 };
 
-// const addMarker = (spot) => {
-//   if (!window.kakao || !window.kakao.maps) return;
-//   const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
-//   const marker = new window.kakao.maps.Marker({
-//     position: position,
-//     map: map
-//   });
-//   markers.push(marker);
-// };
+
 
 const addMarker = (spot) => {
   if (!window.kakao || !window.kakao.maps) return;
@@ -437,21 +408,7 @@ const addMarker = (spot) => {
     alert('여행 계획 추가 중 오류가 발생했습니다.');
   }
 };
-// const startNewPlan = async () => {
-//   try {
-//     const docRef = await planStore.insertPlan({
-//       userId: 'admin', // 실제 사용자 ID로 대체해야 함
-//       tripAt: new Date().toISOString().split('T')[0] // 오늘 날짜로 설정
-//     });
 
-//     currentPlanId.value = docRef.id;
-//     console.log(currentPlanId.value);
-//     alert('새 여행 계획이 생성되었습니다. 계획 ID: ' + currentPlanId.value);
-//   } catch (error) {
-//     console.error('여행 계획 생성 실패:', error);
-//     alert('여행 계획 생성 중 오류가 발생했습니다.');
-//   }
-//     };
     const createPlan = async () => {
       try {
         // 1. 새 계획 생성
@@ -481,41 +438,22 @@ const addMarker = (spot) => {
       }
     };
     const toggleSpotSelection = (spot) => {
-  if (isSpotSelected(spot)) {
-    planStore.removeSelectedSpot(spot.spotId);
-  } else {
-    planStore.addSelectedSpot(spot);
-  }
-};
+      if (selectedSpot.value && selectedSpot.value.spotId === spot.spotId) {
+        // 이미 선택된 장소를 다시 클릭하면 선택 취소
+        selectedSpot.value = null;
+      } else if (selectedSpot.value && selectedSpot.value.spotId !== spot.spotId) {
+        // 다른 장소가 이미 선택되어 있으면 모달 표시
+        showAlreadySelectedModal.value = true;
+      } else {
+        // 새로운 장소 선택
+        selectedSpot.value = spot;
+      }
+      console.log('Selected spot:', selectedSpot.value); // 디버깅용
+    };
 
 const isSpotSelected = (spot) => {
-    return planStore.selectedSpots.some(s => s.spotId === spot.spotId);
-    };
-    ;
-
-
-// const startNewPlan = () => {
-//   showModal.value = true;
-//   newPlanUserId.value = '';
-//   newPlanTripAt.value = new Date().toISOString().split('T')[0];
-    // };
-//     const startNewPlan = () => {
-//   showModal.value = true;
-//   newPlanUserId.value = authStore.user?.id || ''; // 저장된 userId 사용
-//   newPlanTripAt.value = new Date().toISOString().split('T')[0];
-// };
-
-// const startNewPlan = () => {
-//   const token = localStorage.getItem('accessToken');
-//   if (!token) {
-//     alert('로그인이 필요합니다');
-//     return;
-//   }
-//   showModal.value = true;
-//   const decoded = jwtDecode(token);
-//   newPlanUserId.value = decoded.userId;
-//   newPlanTripAt.value = new Date().toISOString().split('T')[0];
-// };
+  return selectedSpot.value && selectedSpot.value.spotId === spot.spotId;
+};
 
 const startNewPlan = () => {
   const token = localStorage.getItem('accessToken');
@@ -532,75 +470,7 @@ const startNewPlan = () => {
 const cancelNewPlan = () => {
   showModal.value = false;
 };
-
-// const confirmNewPlan = async () => {
-//   if (!newPlanUserId.value || !newPlanTripAt.value) {
-//     alert('사용자 ID와 여행 날짜를 모두 입력해주세요.');
-//     return;
-//   }
-
-//   try {
-//     const planData = {
-//       userId: newPlanUserId.value,
-//       tripAt: newPlanTripAt.value // input type="date"에서 받은 'YYYY-MM-DD' 형식의 문자열
-//     };
-
-//     const response = await planStore.insertPlan(planData);
-//     currentPlanId.value = response.planId;
-//     showModal.value = false;
-//     alert('새 여행 계획이 생성되었습니다.');
-//   } catch (error) {
-//     console.error('여행 계획 생성 실패:', error);
-//     alert('여행 계획 생성 중 오류가 발생했습니다.');
-//   }
-    // };
-// const confirmNewPlan = async () => {
-//   if (!newPlanUserId.value || !newPlanTripAt.value) {
-//     alert('사용자 ID와 여행 날짜를 모두 입력해주세요.');
-//     return;
-//   }
-
-//   try {
-//     const planData = {
-//       userId: newPlanUserId.value,
-//       tripAt: newPlanTripAt.value
-//     };
-
-//     console.log('전송할 데이터:', planData); // 디버깅용
-//     const response = await planStore.insertPlan(planData);
-//     showModal.value = false;
-//     alert('새 여행 계획이 생성되었습니다.');
-//   } catch (error) {
-//     console.error('여행 계획 생성 실패 상세:', error.response?.data);
-//     alert('여행 계획 생성 중 오류가 발생했습니다.');
-//   }
-    // };
     const router = useRouter();
-//     const confirmNewPlan = async () => {
-//   if (!newPlanUserId.value || !newPlanTripAt.value) {
-//     alert('사용자 ID와 여행 날짜를 모두 입력해주세요.');
-//     return;
-//   }
-
-//   try {
-//     const planData = {
-//       userId: newPlanUserId.value,
-//       tripAt: newPlanTripAt.value
-//     };
-
-//     const result = await planStore.insertPlan(planData);
-//     showModal.value = false;
-
-//     // planId를 사용하여 PlanView 페이지로 이동
-//     router.push({
-//       name: 'PlanView',
-//       params: { planId: result.planId }
-//     });
-//   } catch (error) {
-//     console.error('여행 계획 생성 실패:', error);
-//     alert('여행 계획 생성 중 오류가 발생했습니다.');
-//   }
-    // };
 
 
     // 사용자 id 찾기
@@ -613,33 +483,7 @@ const cancelNewPlan = () => {
   return '로그인이 필요합니다';
 });
 
-  //   const confirmNewPlan = async () => {
-  // if (!newPlanUserId.value || !newPlanTripAt.value) {
-  //   alert('사용자 ID와 여행 날짜를 모두 입력해주세요.');
-  //   return;
-  // }
 
-  // try {
-  //   const planData = {
-  //     //userId: newPlanUserId.value,
-  //     userId: authStore.user?.id,
-  //     tripAt: newPlanTripAt.value
-  //   };
-  //   console.log(planData.userId);
-  //   const result = await planStore.insertPlan(planData);
-  //   showModal.value = false;
-
-  //   // PlanView로 이동
-  //   router.push({
-  //     name: 'PlanView',
-  //     params: { planId: result.planId }
-  //   });
-  // } catch (error) {
-  //   console.error('여행 계획 생성 실패:', error);
-  //   alert('여행 계획 생성 중 오류가 발생했습니다.');
-  // }
-  //   };
-//
   const confirmNewPlan = async () => {
   if (!newPlanTripAt.value) {
     alert('여행 날짜를 입력해주세요.');
@@ -694,6 +538,10 @@ const addAndReturnToPlan = async () => {
 
 
     return {
+      goToReviewWrite,
+      selectedSpot,
+      showAlreadySelectedModal,
+      isSpotSelected,
      searchKeyword,
      filteredSpots,
      selectedSido,
