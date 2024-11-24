@@ -117,6 +117,7 @@ export default {
     const messages = ref([]);
     const socket = ref(null);
     const chatContainer = ref(null);
+    const polyline = ref(null);
 
     const initWebSocket = () => {
       const ws = new WebSocket('ws://localhost:8080/trip-recommendation');
@@ -197,45 +198,75 @@ export default {
 
     const updateMarkers = () => {
       if (!map.value || !window.kakao) return;
-
+      
+      // 기존 마커와 오버레이 제거
       markers.value.forEach(marker => marker.setMap(null));
       markers.value = [];
-
+      
+      // 기존 Polyline 제거
+      if (polyline.value) {
+        polyline.value.setMap(null);
+      }
+      
+      const path = [];
+      
       planStore.selectedSpots.forEach((spot, index) => {
+        const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
+        path.push(position);
+        
         const marker = new window.kakao.maps.Marker({
-          position: new window.kakao.maps.LatLng(spot.latitude, spot.longitude),
+          position: position,
           map: map.value
         });
-
+        
         const customOverlay = new window.kakao.maps.CustomOverlay({
-          position: new window.kakao.maps.LatLng(spot.latitude, spot.longitude),
+          position: position,
           content: `<div class="marker-label">${index + 1}</div>`,
           map: map.value,
           yAnchor: 0
         });
-
+        
         markers.value.push(marker);
         markers.value.push(customOverlay);
       });
+      
+      // Polyline 그리기
+      polyline.value = new window.kakao.maps.Polyline({
+        path: path,
+        strokeWeight: 3,
+        strokeColor: '#db4040',
+        strokeOpacity: 0.7,
+        strokeStyle: 'solid'
+      });
+      
+      polyline.value.setMap(map.value);
+      if (path.length > 0) {
+        const bounds = new window.kakao.maps.LatLngBounds();
+        path.forEach(position => bounds.extend(position));
+        map.value.setBounds(bounds);
+      }
     };
 
     onMounted(() => {
       const script = document.createElement('script');
       script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=2bd4f83bc7309d38194a5a7f96c884e0&autoload=false`;
       script.async = true;
-
       script.onload = () => {
         window.kakao.maps.load(() => {
           const container = document.getElementById('map');
           const options = {
             center: new window.kakao.maps.LatLng(36.2683, 127.6358),
-            level: 13
+            level: 9
           };
           map.value = new window.kakao.maps.Map(container, options);
+
+          // 줌 컨트롤
+          const zoomControl = new window.kakao.maps.ZoomControl();
+          map.value.addControl(zoomControl, window.kakao.maps.ControlPosition.RIGHT);
+      
           updateMarkers();
         });
       };
-
       document.head.appendChild(script);
     });
     onUnmounted(() => {
