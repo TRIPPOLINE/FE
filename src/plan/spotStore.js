@@ -68,6 +68,47 @@ export const useSpotStore = defineStore('spot', {
         this.spots = [];
         throw error;
       }
+    },
+    // async searchNearbySpots({ minLatitude, maxLatitude, minLongitude, maxLongitude, cursor, limit }) {
+    //   try {
+    //     //console.log(`store`);
+    //     const response = await api.get('/spot/currentLocation', {
+    //       params: {
+    //         minLatitude,
+    //         maxLatitude,
+    //         minLongitude,
+    //         maxLongitude,
+    //         cursor,
+    //         limit
+    //       }
+    //     });
+    //     //console.log(response);
+    //     this.spots = response.data.spots;
+    //     console.log(this.spots);
+    //     return response.data;
+    //   } catch (error) {
+    //     console.error('주변 관광지 검색 실패:', error);
+    //     this.spots = [];
+    //     throw error;
+    //   }
+    // }
+    async searchNearbySpots({ minLatitude, maxLatitude, minLongitude, maxLongitude }) {
+      try {
+        const response = await api.get('/spot/currentLocation', {
+          params: {
+            minLatitude,
+            maxLatitude,
+            minLongitude,
+            maxLongitude
+          }
+        });
+        this.spots = response.data;
+        return this.spots;
+      } catch (error) {
+        console.error('주변 관광지 검색 실패:', error);
+        this.spots = [];
+        throw error;
+      }
     }
   }
 });
