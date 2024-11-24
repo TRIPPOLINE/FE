@@ -5,7 +5,7 @@
       <div class="flex flex-col sm:flex-row items-center justify-between">
         <!-- 로고 섹션 -->
         <router-link to="/" class="flex items-center mb-2 sm:mb-0">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" 
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
                :class="['w-8 h-8 sm:w-10 sm:h-10 transform rotate-45', isHome ? 'text-white' : 'text-indigo-600']">
             <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
           </svg>
@@ -13,7 +13,7 @@
             TRIPPOLINE
           </h1>
         </router-link>
-        
+
         <!-- 네비게이션 링크 -->
         <nav class="flex space-x-2 sm:space-x-4 mb-2 sm:mb-0">
           <router-link to="/spot" :class="['banner-button text-sm', isHome ? 'text-white' : 'text-gray-600']">
@@ -26,7 +26,7 @@
             공지사항
           </router-link>
         </nav>
-        
+
         <div class="flex space-x-2">
           <!-- 회원가입/로그인 -->
           <template v-if="!isLoggedIn">

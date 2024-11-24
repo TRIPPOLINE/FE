@@ -4,32 +4,35 @@ import { useRoute } from 'vue-router';
 import { useAuthStore } from "@/Auth/components/auth";
 import NavigationBar from "@/global/view/NavigationBar.vue";
 import FooterBar from "@/global/view/FooterBar.vue";
-import { onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
+
 const route = useRoute();
 const authStore = useAuthStore();
+const isHomePage = computed(() => route.path === '/');
 
 onMounted(() => {
-  // 페이지 로드 시 인증 상태 초기화
   authStore.initializeAuth();
 });
 </script>
 
 <template>
-  <div class="min-w-[450px]">
+  <div class="min-w-[450px] flex flex-col min-h-screen">
     <!-- 네비게이션 바 -->
-    <header >
+    <header :class="[
+      'w-full z-50 bg-white',
+      isHomePage ? 'absolute' : 'sticky top-0'
+    ]">
       <NavigationBar />
     </header>
 
     <!-- 라우터 뷰 -->
-    <main class="flex-1 overflow-auto">
+    <main class="flex-1">
       <router-view />
     </main>
+
     <FooterBar class="mt-auto" />
   </div>
 </template>
-
-
 
 <style>
 #app {
@@ -38,7 +41,6 @@ onMounted(() => {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  /* margin-top: 60px; */
 }
 
 nav {
