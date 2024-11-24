@@ -18,6 +18,7 @@ export const useMypageStore = defineStore('mypage', {
   },
 
   actions: {
+    // 프로필 조회
     async fetchProfile(userId) {
       this.isLoading = true;
       try {
@@ -31,6 +32,7 @@ export const useMypageStore = defineStore('mypage', {
       }
     },
 
+    // 프로필 생성
     async createProfile(formData) {
       this.isLoading = true;
       try {
@@ -47,6 +49,7 @@ export const useMypageStore = defineStore('mypage', {
       }
     },
 
+    // 프로필 수정
     async modifyProfile(formData) {
       this.isLoading = true;
       try {
@@ -63,6 +66,7 @@ export const useMypageStore = defineStore('mypage', {
       }
     },
 
+    // 사용자 정보 조회
     async fetchUserInfo(userId) {
       this.isLoading = true;
       try {
@@ -76,6 +80,7 @@ export const useMypageStore = defineStore('mypage', {
       }
     },
 
+    // 사용자 정보 수정
     async updateUserInfo(userData) {
       this.isLoading = true;
       try {
@@ -89,18 +94,8 @@ export const useMypageStore = defineStore('mypage', {
         this.isLoading = false;
       }
     },
-async fetchSpotInfo(spotId) {
-  this.isLoading = true;
-  try {
-    const response = await api.get(`/spot/sigungu/${spotId}/attraction`);
-    return response.data;
-  } catch (error) {
-    console.error('여행지 정보 조회 실패:', error);
-    return null;
-  } finally {
-    this.isLoading = false;
-  }
-},
+
+    // 사용자 plan 조회
     async fetchPlans(userId) {
       this.isLoading = true;
       try {
@@ -118,6 +113,8 @@ async fetchSpotInfo(spotId) {
         this.isLoading = false;
       }
     },
+
+    // 사용자 plan 삭제
     async deletePlan(planId) {
       this.isLoading = true;
       try {
@@ -131,6 +128,8 @@ async fetchSpotInfo(spotId) {
         this.isLoading = false;
       }
     },
+
+    // 여행 계획의 여행지 조회
     async fetchSpotById(spotId) {
       this.isLoading = true;
       try {
@@ -143,6 +142,22 @@ async fetchSpotInfo(spotId) {
         this.isLoading = false;
       }
     },
+
+    // 여행지 정보 조회
+    async fetchSpotInfo(spotId) {
+      this.isLoading = true;
+      try {
+        const response = await api.get(`/spot/sigungu/${spotId}/attraction`);
+        return response.data;
+      } catch (error) {
+        console.error('여행지 정보 조회 실패:', error);
+        return null;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    // plan 상세 조회
     async fetchPlanDetails(planId) {
       this.isLoading = true;
       try {
