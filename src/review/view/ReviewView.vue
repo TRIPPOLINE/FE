@@ -1,156 +1,111 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <!-- 검색 및 정렬 옵션 -->
-    <div class="mb-6 flex justify-between items-center">
-      <input
-        v-model="keyword"
-        @input="debounceSearch"
-        placeholder="검색어를 입력하세요"
-        class="px-4 py-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-      <select
-        v-model="sortBy"
-        @change="resetAndFetch"
-        class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="weight">가중치순</option>
-        <option value="latest">최신순</option>
-        <option value="likes">좋아요순</option>
+  <div>
+    <h1>리뷰 게시판</h1>
+
+    <!-- 정렬 옵션 -->
+    <select v-model="sortBy" @change="loadReviews">
+      <option value="likes">좋아요 순</option>
+      <option value="latest">최신순</option>
+    </select>
+
+    <!-- 검색 옵션 -->
+    <div>
+      <input v-model="searchKeyword" placeholder="검색어 입력">
+      <select v-model="searchType">
+        <option value="all">제목과 내용</option>
+        <option value="title">제목</option>
+        <option value="content">내용</option>
       </select>
+      <button @click="searchReviews">검색</button>
     </div>
 
     <!-- 리뷰 목록 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div
-        v-for="review in reviews"
-        :key="review.reviewNo"
-        class="bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105"
-      >
-        <img :src="review.imageUrl || 'default-image.jpg'" alt="Review image" class="w-full h-48 object-cover">
-        <div class="p-4">
-          <h3 class="text-xl font-semibold mb-2">{{ review.title }}</h3>
-          <p class="text-gray-600 mb-4 line-clamp-3">{{ review.content }}</p>
-          <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-              <img :src="review.userAvatar || 'default-avatar.jpg'" alt="User avatar" class="w-8 h-8 rounded-full">
-              <span class="text-sm font-medium">{{ review.userName }}</span>
-            </div>
-            <div class="flex items-center space-x-2">
-              <span class="text-yellow-500">★</span>
-              <span class="font-semibold">{{ review.score.toFixed(1) }}</span>
-            </div>
-          </div>
-          <p class="text-sm text-gray-500 mt-2">{{ formatDate(review.writeAt) }}</p>
-        </div>
-      </div>
+    <div v-for="review in reviews" :key="review.reviewNo">
+      <h2>{{ review.title }}</h2>
+      <p>{{ review.content }}</p>
+      <p>작성자: {{ review.userName }}</p>
+      <p>작성일: {{ review.writeAt }}</p>
+      <p>평점: {{ review.score }}</p>
     </div>
 
-    <!-- 로딩 인디케이터 -->
-    <div v-if="loading" class="text-center py-4">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+    <!-- 페이지네이션 -->
+    <div>
+      <button @click="prevPage" :disabled="currentPage === 1">이전</button>
+      <span>{{ currentPage }}</span>
+      <button @click="nextPage">다음</button>
     </div>
-
-    <!-- 무한 스크롤을 위한 관찰 요소 -->
-    <div ref="infiniteScrollTrigger"></div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, watch, nextTick } from 'vue'
-import axios from 'axios'
-import debounce from 'lodash/debounce'
-import api from "@/Auth/api/AuthIndex";
-
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 
 export default {
   setup() {
-    const keyword = ref('')
-    const reviews = ref([])
-    const sortBy = ref('weight')
-    const loading = ref(false)
-    const page = ref(1)
-    const infiniteScrollTrigger = ref(null)
+    const reviews = ref([]);
+    const sortBy = ref('likes');
+    const searchKeyword = ref('');
+    const searchType = ref('all');
+    const currentPage = ref(1);
+    const pageSize = 10;
 
-    const fetchReviews = async () => {
-      if (loading.value) return
-      loading.value = true
+    const loadReviews = async () => {
       try {
-        const response = await api.get('/review/search', {
+        const response = await axios.get('/api/reviews', {
           params: {
-            keyword: keyword.value,
-            page: page.value,
-            size: 12,
-            sortBy: sortBy.value
+            sortBy: sortBy.value,
+            page: currentPage.value,
+            size: pageSize
           }
-        })
-        reviews.value = [...reviews.value, ...response.data]
-        page.value++
+        });
+        reviews.value = response.data;
       } catch (error) {
-        console.error('리뷰를 불러오는 중 오류가 발생했습니다:', error)
-      } finally {
-        loading.value = false
+        console.error('리뷰 로딩 실패:', error);
       }
-    }
+    };
 
-    const resetAndFetch = () => {
-      reviews.value = []
-      page.value = 1
-      fetchReviews()
-    }
-
-    const debounceSearch = debounce(() => {
-      resetAndFetch()
-    }, 300)
-
-    const formatDate = (dateString) => {
-      return new Date(dateString).toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })
-    }
-
-    // 무한 스크롤 설정
-    onMounted(() => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting && !loading.value) {
-            fetchReviews()
+    const searchReviews = async () => {
+      try {
+        const response = await axios.get('/api/search', {
+          params: {
+            keyword: searchKeyword.value,
+            searchType: searchType.value,
+            page: currentPage.value,
+            size: pageSize
           }
-        },
-        { threshold: 1.0 }
-      )
+        });
+        reviews.value = response.data;
+      } catch (error) {
+        console.error('리뷰 검색 실패:', error);
+      }
+    };
 
-      nextTick(() => {
-        if (infiniteScrollTrigger.value) {
-          observer.observe(infiniteScrollTrigger.value)
-        }
-      })
+    const prevPage = () => {
+      if (currentPage.value > 1) {
+        currentPage.value--;
+        loadReviews();
+      }
+    };
 
-      // 초기 데이터 로드
-      fetchReviews()
-    })
+    const nextPage = () => {
+      currentPage.value++;
+      loadReviews();
+    };
 
-    watch(sortBy, resetAndFetch)
+    onMounted(loadReviews);
 
     return {
-      keyword,
       reviews,
       sortBy,
-      loading,
-      infiniteScrollTrigger,
-      debounceSearch,
-      formatDate
-    }
+      searchKeyword,
+      searchType,
+      currentPage,
+      loadReviews,
+      searchReviews,
+      prevPage,
+      nextPage
+    };
   }
 }
 </script>
-
-<style scoped>
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>
