@@ -8,46 +8,42 @@
     </div>
 
     <!-- 에러 메시지 -->
-    <div v-else-if="mypageStore.error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+    <div v-if="mypageStore.error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
       {{ mypageStore.error }}
     </div>
 
     <!-- 리뷰 목록 -->
-    <div v-else-if="mypageStore.reviews && mypageStore.reviews.length > 0" 
-      class="grid grid-cols-1 md:grid-cols-2 gap-6">
-  <div v-for="review in mypageStore.reviews" 
-       :key="review.reviewNo" 
-       class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div v-if="mypageStore.reviews && mypageStore.reviews.length > 0" 
+         class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div v-for="review in mypageStore.reviews" 
+           :key="review.reviewNo" 
+           class="bg-white rounded-lg shadow-lg overflow-hidden">
         <!-- 리뷰 이미지 -->
         <img :src="getReviewImage(review)" :alt="review.title" class="w-full h-48 object-cover">
-        
+
         <div class="p-4">
           <!-- 리뷰 제목과 내용 -->
           <h3 class="text-lg font-semibold mb-2">{{ review.title }}</h3>
           <p class="text-gray-600 mb-4 line-clamp-3">{{ review.content }}</p>
-          
+
           <!-- 평점과 날짜 -->
           <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <div class="flex">
-                <span v-for="i in 5" :key="i" 
-                      :class="i <= review.score ? 'text-yellow-400' : 'text-gray-300'">
-                  ★
-                </span>
-              </div>
-              <span class="ml-2">{{ review.score }}</span>
-            </div>
-            <span class="text-sm text-gray-500">
-              {{ formatDate(review.writeAt) }}
-            </span>
+            <span v-for="i in 5" :key="i"
+                  :class="{ 'text-yellow-400': i <= review.score, 'text-gray-300': i > review.score }">★</span>
+            <span class="text-sm text-gray-500">{{ formatDate(review.writeAt) }}</span>
           </div>
 
           <!-- 여행지 정보 -->
           <div class="mt-4 pt-4 border-t">
             <p class="text-sm text-gray-600 flex items-center">
-              <i class="fas fa-map-marker-alt mr-2"></i>
-              {{ review.spotTitle || '여행지 정보 없음' }}
+              <i class="fas fa-map-marker-alt mr-2"></i>{{ review.spotTitle || '여행지 정보 없음' }}
             </p>
+          </div>
+
+          <!-- 수정 및 삭제 버튼 -->
+          <div class="flex justify-between mt-4">
+            <button @click="openModal(review)" class="text-blue-500 hover:underline">수정</button>
+            <button @click="deleteReview(review.reviewNo)" class="text-red-500 hover:underline">삭제</button>
           </div>
         </div>
       </div>
@@ -58,54 +54,35 @@
      class="text-center py-8 text-gray-500">
   작성한 리뷰가 없습니다.
 </div>
-<!-- 페이지네이션 추가 -->
-<div v-if="totalPages > 0" class="flex justify-center mt-4 sm:mt-6 gap-2">
-      <!-- 이전 화살표 -->
-      <button 
-        v-if="currentPageGroup > 1" 
-        @click="changePage((currentPageGroup - 1) * 5)"
-        class="px-3 py-1 border rounded-md transition-colors text-sm text-gray-700 hover:bg-gray-50"
-      >
-        &lt;
-      </button>
 
-      <!-- 페이지 번호 -->
-      <button 
-        v-for="page in displayedPages" 
-        :key="page"
-        @click="changePage(page)"
-        class="px-3 py-1 border rounded-md transition-colors text-sm"
-        :class="currentPage === page ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 hover:bg-gray-50'"
-      >
-        {{ page }}
-      </button>
 
-      <!-- 다음 화살표 -->
-      <button 
-        v-if="currentPageGroup * 5 < totalPages"
-        @click="changePage(currentPageGroup * 5 + 1)"
-        class="px-3 py-1 border rounded-md transition-colors text-sm text-gray-700 hover:bg-gray-50"
-      >
-        &gt;
-      </button>
-    </div>
+    <!-- Edit Review Modal -->
+    <ReviewEditModal 
+      :review='selectedReview' 
+      :isVisible='isModalVisible' 
+      @close='closeModal' 
+      @update='updateReview' />
+    
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useMypageStore } from '@/mypage/myPageStore';
 import { useAuthStore } from '@/Auth/components/auth';
+import ReviewEditModal from '@/mypage/view/ReviewEditModal.vue'; // Import your modal component
 
 const mypageStore = useMypageStore();
 const authStore = useAuthStore();
 
+const selectedReview = ref(null);
+const isModalVisible = ref(false);
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('ko-KR', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   });
 };
 
@@ -115,45 +92,45 @@ const getReviewImage = (review) => {
     : 'https://via.placeholder.com/400x300?text=No+Image';
 };
 
-onMounted(async () => {
-  if (authStore.userId) {
-    await mypageStore.fetchUserReviews(authStore.userId, 1, sizePerPage);
-    // 전체 페이지 수 계산
-    totalPages.value = Math.ceil(mypageStore.totalCount / sizePerPage);
-  }
-});
-
-// 페이지네이션 관련 상태 추가
-const currentPage = ref(1);
-const totalPages = ref(0);
-const sizePerPage = 4; // 한 페이지당 보여줄 리뷰 수
-
-// 현재 페이지 그룹 계산
-const currentPageGroup = computed(() => Math.ceil(currentPage.value / 5));
-
-// 화면에 표시할 페이지 번호 배열
-const displayedPages = computed(() => {
-  const start = (currentPageGroup.value - 1) * 5 + 1;
-  const end = Math.min(currentPageGroup.value * 5, totalPages.value);
-  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-});
-
-// 페이지 변경 함수
-const changePage = async (page) => {
-  try {
-    currentPage.value = page;
-    await mypageStore.fetchUserReviews(authStore.userId, page, sizePerPage);
-  } catch (error) {
-    console.error('페이지 변경 실패:', error);
+const deleteReview = async (reviewNo) => {
+  const confirmed = confirm("정말로 이 리뷰를 삭제하시겠습니까?");
+  if (confirmed) {
+    try {
+      await mypageStore.deleteUserReview(reviewNo);
+      await mypageStore.fetchUserReviews(authStore.user.id);
+      alert("리뷰가 삭제되었습니다.");
+    } catch (error) {
+      console.error('리뷰 삭제 실패:', error);
+      alert("리뷰 삭제에 실패했습니다: " + error.message);
+    }
   }
 };
+
+const openModal = (review) => {
+  selectedReview.value = { ...review }; // Copy the review data to prevent direct mutation
+  isModalVisible.value = true; // Show the modal
+};
+
+const closeModal = () => {
+  isModalVisible.value = false; // Hide the modal
+};
+
+const updateReview = async (updatedReview) => {
+  try {
+    await mypageStore.modifyReview(updatedReview); // Call your store action to update the review
+    await mypageStore.fetchUserReviews(authStore.user.id); // Refresh reviews
+    alert("리뷰가 수정되었습니다.");
+  } catch (error) {
+    console.error('리뷰 수정 실패:', error);
+    alert("리뷰 수정에 실패했습니다.");
+  }
+};
+
+// onMounted 호출 부분 수정
+onMounted(async () => {
+  if (authStore.user && authStore.user.id) {
+    await mypageStore.fetchUserReviews(authStore.user.id);
+  }
+});
 </script>
 
-<style scoped>
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>
