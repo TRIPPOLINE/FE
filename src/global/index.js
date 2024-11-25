@@ -11,6 +11,7 @@ import PlanView from "@/plan/view/PlanView.vue"
 import ReviewView from "@/review/view/ReviewView.vue"
 import MyPageView from "@/mypage/view/MyPageView.vue"
 import ReviewWrite from "@/review/view/ReviewWrite.vue"
+import UserPasswordReset from "@/Auth/view/UserPasswordReset.vue"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -87,6 +88,12 @@ const router = createRouter({
       name: 'MyPage',
       component: MyPageView
     },
+
+    {
+      path: '/user/password-reset',
+      name: 'UserPasswordReset',
+      component: UserPasswordReset
+    }
   ]
 })
 
