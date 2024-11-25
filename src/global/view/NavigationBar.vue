@@ -1,7 +1,7 @@
 <!-- src/components/NavigationBar.vue -->
 <template>
   <div :class="['top-0 left-0 right-0 z-20', isHome ? 'absolute' : 'relative bg-white shadow-md']">
-    <div class="container mx-auto px-4 py-3">
+    <div class="container mx-auto px-4 py-1">
       <div class="flex flex-col sm:flex-row items-center justify-between">
         <!-- 로고 섹션 -->
         <router-link to="/" class="flex items-center mb-2 sm:mb-0">
