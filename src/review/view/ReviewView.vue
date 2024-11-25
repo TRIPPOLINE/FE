@@ -22,7 +22,6 @@
       <div v-for="review in reviews" :key="review.reviewNo" class="bg-white rounded-lg shadow-lg overflow-hidden">
         <!-- 리뷰 이미지 -->
         <img :src="getReviewImage(review)" :alt="review.title" class="w-full h-64 object-cover">
-
         <!-- 리뷰 정보 -->
         <div class="p-4">
           <div class="flex items-center mb-4">
@@ -33,16 +32,10 @@
             </div>
           </div>
           <h3 class="text-lg font-semibold mb-2">{{ review.title }}</h3>
-
           <div class="flex items-center justify-between mb-4">
             <StarRating :score="review.score" />
             <div class="flex items-center space-x-4">
-              <LikeButton
-                :reviewNo="review.reviewNo"
-                :initialLikeCount="review.likeCount"
-                :initialIsLiked="review.isLiked"
-                :userId="userId"
-              />
+              <LikeButton :reviewNo="review.reviewNo" :initialLikeCount="review.likeCount" :initialIsLiked="review.isLiked" :userId="userId" />
               <button class="text-gray-500 hover:text-gray-700">
                 <i class="fas fa-comment"></i>
               </button>
@@ -52,8 +45,7 @@
             </div>
           </div>
           <button @click="openModal(review)" class="mt-2 text-blue-500 hover:underline flex items-center">
-            <i class="fas fa-map-marker-alt mr-2"></i>
-            {{ review.spotTitle || '여행지 정보 없음' }}
+            <i class="fas fa-map-marker-alt mr-2"></i> {{ review.spotTitle || '여행지 정보 없음' }} 리뷰를 자세히 보기
           </button>
         </div>
       </div>
@@ -64,12 +56,20 @@
       로딩 중...
     </div>
 
+    <!-- 리뷰 작성 버튼 -->
+    <div class="fixed bottom-8 right-8">
+      <button @click="goToReviewWrite" class="bg-green-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-green-600 transition duration-300 flex items-center">
+        <i class="fas fa-pen mr-2"></i> 리뷰 작성
+      </button>
+    </div>
+
     <!-- 모달 -->
     <Transition name="modal">
       <div v-if="selectedReview" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-out"
              :class="{ 'translate-y-0 opacity-100 scale-100': selectedReview, 'translate-y-full opacity-0 scale-95': !selectedReview }">
           <div class="p-6">
+            <!-- 모달 내용 -->
             <div class="flex items-center mb-4">
               <img :src="getUserAvatar(selectedReview.userName)" alt="User Avatar" class="w-12 h-12 rounded-full mr-3">
               <div>
@@ -82,16 +82,11 @@
             <p class="mb-4">{{ selectedReview.content }}</p>
             <div class="flex items-center justify-between mb-4">
               <StarRating :score="selectedReview.score" />
-              <LikeButton
-                :reviewNo="selectedReview.reviewNo"
-                :initialLikeCount="selectedReview.likeCount"
-                :initialIsLiked="selectedReview.isLiked"
-                :userId="userId"
-              />
+              <LikeButton :reviewNo="selectedReview.reviewNo" :initialLikeCount="selectedReview.likeCount" :initialIsLiked="selectedReview.isLiked" :userId="userId" />
             </div>
             <div class="bg-gray-100 p-4 rounded mb-4">
               <h3 class="font-bold mb-2">스팟 정보</h3>
-              <p class="flex items-center"><i class="fas fa-map-marker-alt mr-2 text-red-500"></i> {{ selectedReview.spotTitle }}</p>
+              <p class="flex items-center"><i class="fas fa-map-marker-alt mr-2 text-red-500"></i> {{ selectedReview.spotTitle }} </p>
               <p class="mt-2">{{ selectedReview.spotAddr1 }}</p>
             </div>
             <button @click="closeModal" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300">닫기</button>
@@ -104,11 +99,13 @@
 
 <script setup>
 import { ref, onMounted, computed, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import api from "@/Auth/api/AuthIndex";
 import LikeButton from '@/review/component/ReviewLikeComponent.vue';
 import StarRating from '@/review/component/StarRatingComponent.vue';
 import { useAuthStore } from '@/Auth/components/auth.js';
 
+const router = useRouter();
 const defaultImageUrl = 'https://st4.depositphotos.com/17828278/24401/v/600/depositphotos_244011872-stock-illustration-image-vector-symbol-missing-available.jpg';
 const reviews = ref([]);
 const sortBy = ref('likes');
@@ -135,16 +132,9 @@ const loadMoreReviews = async () => {
   currentPage.value++;
   try {
     const response = await api.get('/review', {
-      params: {
-        sortBy: sortBy.value,
-        page: currentPage.value,
-        size: pageSize
-      }
+      params: { sortBy: sortBy.value, page: currentPage.value, size: pageSize }
     });
-    const newReviews = response.data.map(review => ({
-      ...review,
-      isLiked: false,
-    }));
+    const newReviews = response.data.map(review => ({ ...review, isLiked: false }));
     reviews.value = [...reviews.value, ...newReviews];
     if (newReviews.length < pageSize) {
       hasMore.value = false;
@@ -159,16 +149,9 @@ const loadMoreReviews = async () => {
 const loadReviews = async () => {
   try {
     const response = await api.get('/review', {
-      params: {
-        sortBy: sortBy.value,
-        page: currentPage.value,
-        size: pageSize
-      }
+      params: { sortBy: sortBy.value, page: currentPage.value, size: pageSize }
     });
-    reviews.value = response.data.map(review => ({
-      ...review,
-      isLiked: false,
-    }));
+    reviews.value = response.data.map(review => ({ ...review, isLiked: false }));
   } catch (error) {
     console.error('리뷰 로딩 실패:', error);
   }
@@ -177,26 +160,16 @@ const loadReviews = async () => {
 const searchReviews = async () => {
   try {
     const response = await api.get('/review/search', {
-      params: {
-        keyword: searchKeyword.value,
-        searchType: searchType.value,
-        page: currentPage.value,
-        size: pageSize
-      }
+      params: { keyword: searchKeyword.value, searchType: searchType.value, page: currentPage.value, size: pageSize }
     });
-    reviews.value = response.data.map(review => ({
-      ...review,
-      isLiked: false,
-    }));
+    reviews.value = response.data.map(review => ({ ...review, isLiked: false }));
   } catch (error) {
     console.error('리뷰 검색 실패:', error);
   }
 };
 
 const getReviewImage = (review) => {
-  return review.photoUrls && review.photoUrls.length > 0
-    ? review.photoUrls[0]
-    : defaultImageUrl;
+  return review.photoUrls && review.photoUrls.length > 0 ? review.photoUrls[0] : defaultImageUrl;
 };
 
 const getUserAvatar = (userName) => {
@@ -208,17 +181,16 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('ko-KR', options);
 };
 
-const truncateContent = (content, maxLength = 100) => {
-  if (content.length <= maxLength) return content;
-  return content.slice(0, maxLength) + '...';
-};
-
 const openModal = (review) => {
   selectedReview.value = review;
 };
 
 const closeModal = () => {
   selectedReview.value = null;
+};
+
+const goToReviewWrite = () => {
+  router.push({ name: 'ReviewWrite' });
 };
 
 onMounted(() => {
@@ -235,13 +207,10 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.modal-enter-active,
-.modal-leave-active {
+.modal-enter-active, .modal-leave-active {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-.modal-enter-from,
-.modal-leave-to {
+.modal-enter-from, .modal-leave-to {
   opacity: 0;
   transform: scale(0.95) translateY(10px);
 }
