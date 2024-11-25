@@ -38,8 +38,7 @@ export const useAuthStore = defineStore('auth', {
     async login(credentials) {
       try {
         const response = await login(credentials.userId, credentials.password);
-        localStorage.setItem('accessToken', response.accessToken);
-        localStorage.setItem('refreshToken', response.refreshToken);
+        this.setTokens(response.accessToken, response.refreshToken, credentials.remember);
 
         setAuthToken(response.accessToken);
 
@@ -66,20 +65,38 @@ export const useAuthStore = defineStore('auth', {
       setAuthToken(null);
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
+      localStorage.removeItem('rememberLogin');
     },
 
-    setAccessToken(token) {
-      this.accessToken = token
-      localStorage.setItem('accessToken', token)
+    setTokens(accessToken, refreshToken, remember) {
+      this.accessToken = accessToken;
+      this.refreshToken = refreshToken;
+      if (remember) {
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('rememberLogin', 'true');
+      } else {
+        sessionStorage.setItem('accessToken', accessToken);
+        sessionStorage.setItem('refreshToken', refreshToken);
+      }
     },
 
-    clearAccessToken() {
-      this.accessToken = null
-      localStorage.removeItem('accessToken')
+    clearTokens() {
+      this.accessToken = null;
+      this.refreshToken = null;
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('rememberLogin');
+      sessionStorage.removeItem('accessToken');
+      sessionStorage.removeItem('refreshToken');
     },
 
     initializeAuth() {
-      const token = localStorage.getItem('accessToken');
+      const rememberLogin = localStorage.getItem('rememberLogin');
+      const token = rememberLogin === 'true'
+        ? localStorage.getItem('accessToken')
+        : sessionStorage.getItem('accessToken');
+
       if (token) {
         try {
           const decoded = jwtDecode(token);
