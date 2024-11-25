@@ -86,6 +86,9 @@
                 <div class="p-3">
                   <h3 class="text-base font-semibold mb-1">{{ spot.title }}</h3>
                   <p class="text-xs text-gray-600">{{ spot.frontAddress }}</p>
+                  <div class="star-rating">
+            <span v-for="n in 5" :key="n" :class="{ 'text-yellow-500': n <= Math.round(spot.avgScore), 'text-gray-300': n > Math.round(spot.avgScore) }">★</span>
+        </div>
                   <button @click.stop="toggleSpotSelection(spot)"
                     class="mt-1 px-2 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-300">
                     {{ isSpotSelected(spot) ? '선택 취소' : '선택하기' }}
@@ -125,42 +128,39 @@
           <div class="absolute bottom-4 left-0 right-0 flex justify-between px-4 z-10">
             <!-- 현재 지도 위치로 검색 버튼 -->
             <div class="flex-1 flex justify-center">
-              <button @click="searchNearbySpots"
-                class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors duration-300 shadow-lg">
-                현재 지도 위치로 검색
+              <button @click="searchNearbySpots" class="group bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-3 rounded-full hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-blue-200/50 hover:scale-105 flex items-center space-x-2">
+                  <i class="fas fa-search text-lg group-hover:rotate-12 transition-transform duration-300"></i>
+                  <span class="font-medium">지도 내 검색</span>
               </button>
             </div>
             <!-- 여행 계획 생성 버튼과 드롭다운 패널 -->
             <div class="relative">
-              <!-- 여행 계획 생성 드롭다운 패널 -->
-              <div v-if="showPlanPanel"
-                class="absolute right-0 bottom-full mb-2 bg-white rounded-lg shadow-xl p-6 z-50 w-80">
-                <div class="mb-4">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">여행 날짜</label>
-                  <input v-model="newPlanTripAt" type="date"
-                    class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <!-- 여행 계획 생성 드롭다운 패널 -->
+                <div v-if="showPlanPanel"
+                    class="absolute right-0 bottom-full mb-4 bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-6 z-50 w-80 border border-gray-100 transform transition-all duration-300">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">여행 날짜 선택</label>
+                        <input v-model="newPlanTripAt" type="date"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300">
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button @click="togglePlanPanel"
+                            class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-300">
+                            취소
+                        </button>
+                        <button @click="confirmNewPlan"
+                            class="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 hover:shadow-lg hover:shadow-blue-200/50">
+                            일정 만들기
+                        </button>
+                    </div>
                 </div>
-                <div class="flex justify-end space-x-2">
-                  <button @click="togglePlanPanel"
-                    class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors duration-300">
-                    취소
-                  </button>
-                  <button @click="confirmNewPlan"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-300">
-                    생성
-                  </button>
-                </div>
-              </div>
 
-              <!-- 여행 계획 생성 버튼 -->
-              <button v-if="!route.query.planId" @click="togglePlanPanel"
-                class="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600 transition duration-300 shadow-lg flex items-center">
-                <i class="fas fa-plus mr-2"></i> 여행 계획 생성
-              </button>
-              <button v-else @click="continuePlan"
-                class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors duration-300 shadow-lg">
-                선택 완료
-              </button>
+                <!-- 여행 계획 생성 버튼 -->
+                <button v-if="!route.query.planId" @click="togglePlanPanel"
+                    class="group bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-full hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-green-200/50 hover:scale-105 flex items-center space-x-2">
+                    <i class="fas fa-plus text-lg group-hover:rotate-180 transition-transform duration-500"></i>
+                    <span class="font-medium">나만의 일정 만들기</span>
+                </button>
             </div>
 
           </div>
@@ -168,8 +168,6 @@
       </div>
 
     </div>
-
-    <!-- 여행 계획 버튼 -->
 
 
 

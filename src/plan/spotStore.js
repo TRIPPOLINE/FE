@@ -118,15 +118,15 @@ export const useSpotStore = defineStore('spot', {
           minLongitude,
           maxLongitude
         };
-        
+
         if (contentTypeId !== undefined) {
           params.contentTypeId = contentTypeId;
         }
-        
+
         if (keyword) {
           params.keyword = keyword;
         }
-        
+
         const response = await api.get('/spot/currentLocation', { params });
         this.spots = response.data;
         return this.spots;
