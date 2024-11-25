@@ -10,6 +10,7 @@ import NoticeWriteView from "@/notice/view/NoticeWriteView.vue"
 import PlanView from "@/plan/view/PlanView.vue"
 import ReviewView from "@/review/view/ReviewView.vue"
 import MyPageView from "@/mypage/view/MyPageView.vue"
+import ReviewWrite from "@/review/view/ReviewWrite.vue"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -69,6 +70,11 @@ const router = createRouter({
       path: '/review',
       name: 'ReviewList',
       component: ReviewView
+    },
+    {
+      path: '/review/write',
+      name: 'ReviewWrite',
+      component: ReviewWrite
     },
     {
       path: '/search',
