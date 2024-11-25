@@ -7,7 +7,8 @@ export const useMypageStore = defineStore('mypage', {
     profile: null,
     user: null,
     plans: [],
-    reviews: [],
+    reviews: [], // 빈 배열로 초기화
+    totalCount: 0, // 페이지네이션을 위한 총 개수 추가
     isLoading: false,
     error: null
   }),
@@ -100,7 +101,7 @@ export const useMypageStore = defineStore('mypage', {
       this.isLoading = true;
       try {
         console.log('user:', userId);
-        const response = await api.get(`/plan/listplan`, { 
+        const response = await api.get(`/plan/listplan`, {
           params: { userId },
           headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
         });
@@ -173,8 +174,27 @@ export const useMypageStore = defineStore('mypage', {
         this.isLoading = false;
       }
     },
-    clearError() {
-      this.error = null;
+    // 내 리뷰 보기
+    async fetchUserReviews(userId, page = 1, size = 5) {
+      this.isLoading = true;
+      try {
+        const response = await api.get('/review/userlist', {
+          params: {
+            userId,
+            page,
+            size
+          }
+        });
+        this.reviews = response.data || []; // 응답이 없을 경우 빈 배열 할당
+        this.totalCount = response.data?.length || 0;
+        return response.data;
+      } catch (error) {
+        this.error = error.message;
+        console.error('사용자 리뷰 조회 실패:', error);
+        this.reviews = []; // 에러 발생 시 빈 배열로 초기화
+      } finally {
+        this.isLoading = false;
+      }
     }
   }
 });
