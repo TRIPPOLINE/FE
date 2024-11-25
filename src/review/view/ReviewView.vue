@@ -11,14 +11,27 @@
         </select>
         <button @click="searchReviews" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">검색</button>
       </div>
-      <select v-model="sortBy" @change="loadReviews" class="border p-2 rounded mt-2 md:mt-0">
-        <option value="likes">인기순</option>
-        <option value="latest">최신순</option>
-      </select>
+      <div class="flex border-b">
+        <button
+          @click="changeSortBy('likes')"
+          class="px-6 py-2 font-medium transition-all duration-200"
+          :class="sortBy === 'likes' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'"
+        >
+          트렌딩
+        </button>
+        <button
+          @click="changeSortBy('latest')"
+          class="px-6 py-2 font-medium transition-all duration-200"
+          :class="sortBy === 'latest' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'"
+        >
+          최신
+        </button>
+      </div>
+
     </div>
 
     <!-- 리뷰 그리드 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
       <div v-for="review in reviews" :key="review.reviewNo" class="bg-white rounded-lg shadow-lg overflow-hidden">
         <!-- 리뷰 이미지 -->
         <img :src="getReviewImage(review)" :alt="review.title" class="w-full h-64 object-cover">
@@ -45,7 +58,7 @@
             </div>
           </div>
           <button @click="openModal(review)" class="mt-2 text-blue-500 hover:underline flex items-center">
-            <i class="fas fa-map-marker-alt mr-2"></i> {{ review.spotTitle || '여행지 정보 없음' }} 리뷰를 자세히 보기
+            <i class="fas fa-map-marker-alt mr-2"></i> {{ review.spotTitle || '' }} 리뷰 보기
           </button>
         </div>
       </div>
@@ -118,6 +131,14 @@ const authStore = useAuthStore();
 const userId = computed(() => authStore.userId);
 const isLoading = ref(false);
 const hasMore = ref(true);
+
+const changeSortBy = async (value) => {
+  sortBy.value = value;
+  currentPage.value = 1;
+  hasMore.value = true;
+  reviews.value = [];
+  await loadReviews();
+};
 
 const handleScroll = () => {
   const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
