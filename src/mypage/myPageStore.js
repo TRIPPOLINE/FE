@@ -7,7 +7,7 @@ export const useMypageStore = defineStore('mypage', {
     profile: null,
     user: null,
     plans: [],
-    reviews: [],
+    reviews: [], // 빈 배열로 초기화
     isLoading: false,
     error: null
   }),
@@ -99,8 +99,9 @@ export const useMypageStore = defineStore('mypage', {
     async fetchPlans(userId) {
       this.isLoading = true;
       try {
+        this.user = userId;
         console.log('user:', userId);
-        const response = await api.get(`/plan/listplan`, { 
+        const response = await api.get(`/plan/listplan`, {
           params: { userId },
           headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
         });
@@ -173,8 +174,96 @@ export const useMypageStore = defineStore('mypage', {
         this.isLoading = false;
       }
     },
-    clearError() {
-      this.error = null;
+    // 내 리뷰 보기
+
+async fetchUserReviews(userId) {
+  this.isLoading = true;
+  try {
+    const response = await api.get('/review/userlist', {
+      params: { userId }
+    });
+
+    // 서버에서 받은 데이터가 존재하는지 확인
+    if (response.data && response.data.length > 0) {
+      this.reviews = response.data; 
+      this.totalCount = response.data.length; 
+    } else {
+      this.reviews = []; 
+      this.totalCount = 0; 
     }
+    
+    return response.data;
+  } catch (error) {
+    this.error = error.message; 
+    console.error('사용자 리뷰 조회 실패:', error);
+    this.reviews = []; 
+  } finally {
+    this.isLoading = false; 
+  }
+},
+    //리뷰 삭제
+    async deleteUserReview(reviewNo) {
+      this.isLoading = true; 
+      console.log(this.user); 
+      try {
+        
+        await api.post('/review/delete', { reviewNo, userId: this.user }); 
+        
+      } catch (error) {
+        this.error = error.message; 
+        console.error('리뷰 삭제 실패:', error);
+        throw error; 
+      } finally {
+        this.isLoading = false; 
+      }
+    },
+    async deleteReviewPhoto(reviewNo, photoUrl) {
+      this.isLoading = true; 
+      try {
+        await api.post('/review/deletePhoto', { reviewNo, photoUrl });
+      } catch (error) {
+        this.error = error.message;
+        console.error('사진 삭제 실패:', error);
+        throw error; 
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async modifyReview(reviewData) {
+      this.isLoading = true;
+      try {
+        const formData = new FormData();
+    
+        formData.append('reviewUpdateJson', JSON.stringify({
+          reviewNo: reviewData.reviewNo,
+          userId: this.user, 
+          title: reviewData.title,
+          content: reviewData.content,
+          score: reviewData.score,
+          deletePhotoUrls: reviewData.deletePhotoUrls || [] 
+        }));
+        console.log(`formData`, formData);
+       
+        if (reviewData.newPhotos && reviewData.newPhotos.length > 0) {
+          reviewData.newPhotos.forEach(photo => {
+            formData.append('newPhotos', photo);
+          });
+        }
+    
+        const response = await api.post('/review/modify', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' } 
+        });
+    
+        console.log(response);
+        return response.data;
+      } catch (error) {
+        this.error = error.message;
+        console.error('리뷰 수정 실패:', error);
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    }
+  
   }
 });

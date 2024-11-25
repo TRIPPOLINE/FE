@@ -88,6 +88,7 @@ const router = createRouter({
       name: 'MyPage',
       component: MyPageView
     },
+
     {
       path: '/user/password-reset',
       name: 'UserPasswordReset',
