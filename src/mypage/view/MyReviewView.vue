@@ -1,6 +1,5 @@
 <template>
   <div class="container mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-6">내 리뷰 목록</h1>
 
     <!-- 로딩 상태 표시 -->
     <div v-if="mypageStore.isLoading" class="text-center py-8">
@@ -14,7 +13,7 @@
 
     <!-- 리뷰 목록 -->
     <div v-if="mypageStore.reviews && mypageStore.reviews.length > 0" 
-         class="grid grid-cols-1 md:grid-cols-2 gap-6">
+         class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div v-for="review in mypageStore.reviews" 
            :key="review.reviewNo" 
            class="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -27,10 +26,12 @@
           <p class="text-gray-600 mb-4 line-clamp-3">{{ review.content }}</p>
 
           <!-- 평점과 날짜 -->
-          <div class="flex items-center justify-between">
-            <span v-for="i in 5" :key="i"
-                  :class="{ 'text-yellow-400': i <= review.score, 'text-gray-300': i > review.score }">★</span>
-            <span class="text-sm text-gray-500">{{ formatDate(review.writeAt) }}</span>
+          <div class="mt-2"> 
+            <div class="flex space-x-5"> 
+              <span v-for="i in 5" :key="i"
+                    :class="{ 'text-yellow-400': i <= review.score, 'text-gray-300': i > review.score }">★</span>
+            </div>
+            <span class="text-sm text-gray-500">{{ formatDate(review.writeAt) }}</span> 
           </div>
 
           <!-- 여행지 정보 -->
