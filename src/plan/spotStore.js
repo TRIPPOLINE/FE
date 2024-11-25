@@ -110,16 +110,24 @@ export const useSpotStore = defineStore('spot', {
     //     throw error;
     //   }
     // }
-    async searchNearbySpots({ minLatitude, maxLatitude, minLongitude, maxLongitude }) {
+    async searchNearbySpots({ minLatitude, maxLatitude, minLongitude, maxLongitude, contentTypeId, keyword }) {
       try {
-        const response = await api.get('/spot/currentLocation', {
-          params: {
-            minLatitude,
-            maxLatitude,
-            minLongitude,
-            maxLongitude
-          }
-        });
+        const params = {
+          minLatitude,
+          maxLatitude,
+          minLongitude,
+          maxLongitude
+        };
+
+        if (contentTypeId !== undefined) {
+          params.contentTypeId = contentTypeId;
+        }
+
+        if (keyword) {
+          params.keyword = keyword;
+        }
+
+        const response = await api.get('/spot/currentLocation', { params });
         this.spots = response.data;
         return this.spots;
       } catch (error) {
