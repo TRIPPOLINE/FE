@@ -1,9 +1,8 @@
 <template>
-  <div class="my-page-view container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-8">마이페이지</h1>
+  <div class="my-page-view w-2/4 mx-auto px-4 py-8">
     
     <!-- 프로필 -->
-    <div class="mb-12">
+    <div class="mb-5">
       <ProfileView />
     </div>
     

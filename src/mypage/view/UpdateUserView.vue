@@ -79,51 +79,53 @@ onMounted(fetchUserInfo);
 </script>
 
 <template>
-  <div class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-xl">
-    <h2 class="text-2xl font-bold mb-6">내 정보 수정</h2>
-    <form @submit.prevent="updateUserInfo" class="space-y-4">
+  <div class="max-w-md ml-0 mt-5 p-6 bg-white rounded-lg">
+    <form @submit.prevent="updateUserInfo" class="space-y-8">
       <!-- 사용자 ID (읽기 전용) -->
-      <div>
-        <label for="id" class="block text-sm font-medium text-gray-700">아이디</label>
+      <div class="flex items-center space-x-4"> <!-- Flexbox 사용 -->
+        <label for="id" class="block text-base font-medium text-gray-700 w-[300px]">아이디</label> <!-- 레이블 너비 설정 -->
         <input v-model="userForm.id" id="id" type="text" readonly class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 cursor-not-allowed">
       </div>
       <!-- 사용자 이름 -->
-      <div>
-        <label for="name" class="block text-sm font-medium text-gray-700">이름</label>
+      <div class="flex items-center space-x-4"> <!-- Flexbox 사용 -->
+        <label for="name" class="block text-base font-medium text-gray-700 w-[300px]">이름</label> <!-- 레이블 너비 설정 -->
         <input v-model="userForm.name" id="name" type="text" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
       </div>
       <!-- 사용자 이메일 -->
-      <div>
-        <label for="email" class="block text-sm font-medium text-gray-700">이메일</label>
+      <div class="flex items-center space-x-4"> <!-- Flexbox 사용 -->
+        <label for="email" class="block text-base font-medium text-gray-700 w-[300px]">이메일</label> <!-- 레이블 너비 설정 -->
         <input v-model="userForm.email" id="email" type="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
       </div>
       <!-- 비밀번호 변경 버튼 -->
-      <div v-if="!isChangingPassword">
-        <button @click.prevent="startChangingPassword" type="button" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+      <div v-if="!isChangingPassword" class="flex justify-start mt-4">
+        <button @click.prevent="startChangingPassword" type="button" class="mt-2 px-4 py-2 text-red-500 rounded-md ">
           비밀번호 변경
         </button>
       </div>
       <!-- 비밀번호 변경 폼 -->
-      <div v-if="isChangingPassword" class="space-y-2">
-        <div>
-          <label for="currentPassword" class="block text-sm font-medium text-gray-700">현재 비밀번호</label>
+      <div v-if="isChangingPassword" class="space-y-8">
+        <div class="flex items-center space-x-4"> <!-- Flexbox 사용 -->
+          <label for="currentPassword" class="block text-base font-medium text-gray-700 w-[300px]">현재 비밀번호</label> <!-- 레이블 너비 설정 -->
           <input v-model="currentPassword" id="currentPassword" type="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
         </div>
-        <div>
-          <label for="newPassword" class="block text-sm font-medium text-gray-700">새 비밀번호</label>
+        <div class="flex items-center space-x-4"> <!-- Flexbox 사용 -->
+          <label for="newPassword" class="block text-base font-medium text-gray-700 w-[300px]">새 비밀번호</label> <!-- 레이블 너비 설정 -->
           <input v-model="newPassword" id="newPassword" type="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
         </div>
-        <div>
-          <label for="confirmPassword" class="block text-sm font-medium text-gray-700">새 비밀번호 확인</label>
+        <div class="flex items-center space-x-4"> <!-- Flexbox 사용 -->
+          <label for="confirmPassword" class="block text-base font-medium text-gray-700 w-[300px]">새 비밀번호 확인</label> <!-- 레이블 너비 설정 -->
           <input v-model="confirmPassword" id="confirmPassword" type="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
         </div>
       </div>
-      <!-- 제출 버튼 -->
-      <div>
-        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-          정보 수정
-        </button>
-      </div>
     </form>
+
+    <!-- 제출 버튼을 오른쪽 하단에 위치시키기 -->
+    <div class="flex justify-end mt-4">
+      <button type="submit" @click.prevent="updateUserInfo"
+              class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
+        수정
+      </button>
+    </div>
+
   </div>
 </template>

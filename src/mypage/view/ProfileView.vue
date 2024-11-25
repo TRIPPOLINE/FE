@@ -98,7 +98,7 @@
   });
 </script>
 <template>
-  <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
+  <div class="bg-white shadow-sm rounded-lg pt-4 pb-2 mb-6">
     <!-- 프로필이 없는 경우 -->
     <div v-if="!hasProfile && !showProfileForm" class="text-center py-8">
       <p class="text-gray-500 mb-4">아직 프로필이 없습니다</p>
@@ -190,7 +190,7 @@
     <!-- 프로필 내용 표시 -->
     <div v-if="hasProfile && !showProfileForm">
       <div class="flex flex-col md:flex-row gap-6">
-        <div class="w-40 h-40">
+        <div class="w-64 h-64">
           <img 
             :src="mypageStore.profile.photo || defaultImageUrl" 
             alt="프로필 이미지"
@@ -205,9 +205,9 @@
       </div>
       <!-- 수정 버튼 -->
       <div class="flex justify-end mt-4">
-        <button @click="startEditProfile" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
-          프로필 수정
-        </button>
+        <button @click="startEditProfile" class="px-4 py-2  text-black rounded-md hover: transition-colors">
+  프로필 수정
+</button>
       </div>
     </div>
   </div>
