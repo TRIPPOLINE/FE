@@ -301,27 +301,7 @@ export default {
       console.log(selectedSpotType)
     };
 
-  //   const searchSpots = async () => {
-  // if (!selectedSido.value || !selectedSigungu.value) return;
-  // hasSearched.value = true;
-  // const contentTypeId = selectedSpotType.value || null;
 
-  // await spotStore.searchSpots({
-  //   areaCode: selectedSido.value,
-  //   siGunGuCode: selectedSigungu.value,
-  //   contentTypeId: contentTypeId
-  // });
-
-  // spots.value = spotStore.spots;
-
-  // if (map && window.kakao && window.kakao.maps) {
-  //   clearMarkers(); // 기존 마커 제거
-  //   spots.value.forEach(spot => addMarker(spot));
-  //   if (spots.value.length > 0) {
-  //     showSpotOnMap(spots.value[0]);
-  //   }
-  // }
-    //   };
 
     const searchSpots = async () => {
   if (!selectedSido.value) {
@@ -784,88 +764,39 @@ const addAndReturnToPlan = async () => {
         params: { planId: route.query.planId }
       });
     };
-//     const handleImageError = (e) => {
-//   e.target.src = '../placeholder-image.png';
-// };
-// const searchNearbySpots = async () => {
-//   if (!map) return;
-//   const bounds = map.getBounds();
-//   const ne = bounds.getNorthEast();
-//   const sw = bounds.getSouthWest();
 
-//   try {
-//     const response = await spotStore.searchNearbySpots({
-//       minLatitude: sw.La,
-//       maxLatitude: ne.La,
-//       minLongitude: sw.Ma,
-//       maxLongitude: ne.Ma,
-//       cursor: spots.value.length > 0 ? spots.value[spots.value.length - 1].spotId : null,
-//       limit: 20
-//     });
-//     if (response.spots.length > 0) {
-//       spots.value = [...spots.value, ...response.spots];
-//       clearMarkers();
-//       spots.value.forEach(spot => addMarker(spot));
-//     } else {
-//       alert('더 이상 검색 결과가 없습니다.');
-//     }
-//   } catch (error) {
-//     console.error('주변 관광지 검색 실패:', error);
-//     alert('주변 관광지 검색 중 오류가 발생했습니다.');
-//   }
-    // };
-//     const searchNearbySpots = async () => {
-//   if (!map) return;
-//   const bounds = map.getBounds();
-//   const ne = bounds.getNorthEast();
-//   const sw = bounds.getSouthWest();
-
-//   try {
-//     const response = await spotStore.searchNearbySpots({
-//       minLatitude: sw.getLat(),
-//       maxLatitude: ne.getLat(),
-//       minLongitude: sw.getLng(),
-//       maxLongitude: ne.getLng()
-//     });
-
-//     if (response.spots && Array.isArray(response.spots)) {
-//       spots.value = response.spots;
-//       console.log('확인', spots.value);
-//       clearMarkers();
-//       spots.value.forEach(spot => {
-//         addMarker(spot);
-//         console.log('Spot ID:', spot.spotId);
-//       });
-//     } else {
-//       console.error('Invalid response format:', response);
-//     }
-//   } catch (error) {
-//     console.error('주변 관광지 검색 실패:', error);
-//     alert('주변 관광지 검색 중 오류가 발생했습니다.');
-//   }
-    // };
     const searchNearbySpots = async () => {
-      if (!map) return;
-      const bounds = map.getBounds();
-      const ne = bounds.getNorthEast();
-      const sw = bounds.getSouthWest();
-
-      try {
-        const response = await spotStore.searchNearbySpots({
-          minLatitude: sw.getLat(),
-          maxLatitude: ne.getLat(),
-          minLongitude: sw.getLng(),
-          maxLongitude: ne.getLng()
-        });
-
-        spots.value = response;
-        clearMarkers();
-        spots.value.forEach(spot => addMarker(spot));
-      } catch (error) {
-        console.error('주변 관광지 검색 실패:', error);
-        alert('주변 관광지 검색 중 오류가 발생했습니다.');
-      }
+  if (!map) return;
+  const bounds = map.getBounds();
+  const ne = bounds.getNorthEast();
+  const sw = bounds.getSouthWest();
+  try {
+    const params = {
+      minLatitude: sw.getLat(),
+      maxLatitude: ne.getLat(),
+      minLongitude: sw.getLng(),
+      maxLongitude: ne.getLng()
     };
+    
+    if (selectedSpotType.value) {
+      params.contentTypeId = selectedSpotType.value;
+    }
+    
+    if (searchKeyword.value) {
+      params.keyword = searchKeyword.value;
+    }
+    
+    const response = await spotStore.searchNearbySpots(params);
+    spots.value = response;
+    clearMarkers();
+    spots.value.forEach(spot => addMarker(spot));
+  } catch (error) {
+    console.error('주변 관광지 검색 실패:', error);
+    alert('여행 명소가 없습니다');
+  }
+};
+
+    
     const isLeftPanelOpen = ref(true);
     
     const toggleLeftPanel = () => {
