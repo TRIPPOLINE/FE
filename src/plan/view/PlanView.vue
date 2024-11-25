@@ -4,16 +4,20 @@
       <h1 class="text-2xl font-bold">여행 계획</h1>
 
       <div class="flex gap-2">
+        <button @click="getOptimizedRoute"
+          class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors">
+          추천 경로
+        </button>
         <button @click="getRecommendations"
-                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                :disabled="!planStore.selectedSpots.length">
+          class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+          :disabled="!planStore.selectedSpots.length">
           주변 명소 추천
         </button>
         <button @click="goToSearch"
-                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
           여행지 추가하기
         </button>
-        
+
       </div>
     </div>
 
@@ -21,12 +25,7 @@
       <!-- 좌측: 선택된 여행지 목록 -->
       <div class="w-1/4">
 
-        <draggable
-          v-model="planStore.selectedSpots"
-          @end="handleDragEnd"
-          item-key="spotId"
-          class="space-y-4"
-        >
+        <draggable v-model="planStore.selectedSpots" @end="handleDragEnd" item-key="spotId" class="space-y-4">
           <template #item="{ element, index }">
             <div class="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-move">
               <div class="flex justify-between items-start">
@@ -35,7 +34,7 @@
                   <p class="text-sm text-gray-600">{{ element.frontAddress }}</p>
                 </div>
                 <button @click="removeSpot(element.spotId)"
-                        class="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600">
+                  class="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600">
                   삭제
                 </button>
               </div>
@@ -49,7 +48,7 @@
 
 
       <!-- 중앙: 지도 -->
-      <div :class="{'w-2/4': showChat, 'w-3/4': !showChat}" class="transition-all duration-300">
+      <div :class="{ 'w-2/4': showChat, 'w-3/4': !showChat }" class="transition-all duration-300">
         <div id="map" class="w-full h-[600px] rounded-lg shadow-md"></div>
       </div>
 
@@ -66,16 +65,12 @@
             </button>
           </div>
           <div class="flex-1 overflow-y-auto p-4" ref="chatContainer">
-            <div v-for="(message, index) in messages"
-                 :key="index"
-                 class="mb-4">
+            <div v-for="(message, index) in messages" :key="index" class="mb-4">
               <div class="p-3 rounded-lg bg-gray-100">
                 <div v-if="message.loading" class="flex gap-1">
                   <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
-                       style="animation-delay: 0.2s"></div>
-                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
-                       style="animation-delay: 0.4s"></div>
+                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
                 </div>
                 <div v-else v-html="message.content"></div>
               </div>
@@ -88,9 +83,10 @@
     <!-- 하단 버튼 -->
 
     <div class="mt-6 flex justify-end space-x-4">
-      <button @click="deleteCurrentPlan" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">계획 삭제</button>
+      <button @click="deleteCurrentPlan"
+        class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">계획 삭제</button>
       <button @click="savePlan"
-              class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+        class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
         계획 완료
       </button>
     </div>
@@ -100,7 +96,7 @@
 <script>
 import { usePlanStore } from "@/plan/planStore";
 import { onMounted, onUnmounted, ref, nextTick } from 'vue';
-
+import axios from 'axios';
 import draggable from 'vuedraggable';
 import { useRouter, useRoute } from 'vue-router';
 
@@ -120,6 +116,178 @@ export default {
     const socket = ref(null);
     const chatContainer = ref(null);
     const polyline = ref(null);
+    const kakaoApiKey = '40b33645cf352fca947afb475d364b6b';
+    const infoWindow = ref(null);
+
+    const getOptimizedRoute = async () => {
+      if (planStore.selectedSpots.length < 2) {
+        alert('최소 2개 이상의 여행지를 선택해주세요.');
+        return;
+      }
+
+      const origin = planStore.selectedSpots[0];
+      const destination = planStore.selectedSpots[planStore.selectedSpots.length - 1];
+      const waypoints = planStore.selectedSpots.slice(1, -1).map(spot => ({
+        name: spot.title,
+        x: spot.longitude,
+        y: spot.latitude
+      }));
+
+      try {
+        const response = await axios.post('https://apis-navi.kakaomobility.com/v1/waypoints/directions', {
+          origin: { x: origin.longitude, y: origin.latitude },
+          destination: { x: destination.longitude, y: destination.latitude },
+          waypoints: waypoints,
+          priority: 'RECOMMEND'
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `KakaoAK ${kakaoApiKey}`
+
+          }
+        });
+
+        drawOptimizedRoute(response.data);
+      } catch (error) {
+        console.error('경로 최적화 요청 실패:', error);
+        alert('경로 최적화 중 오류가 발생했습니다.');
+      }
+    };
+
+    // const drawOptimizedRoute = (data) => {
+    //   if (!map.value || !window.kakao) return;
+
+    //   // 기존 폴리라인 제거
+    //   if (polyline.value) {
+    //     polyline.value.setMap(null);
+    //   }
+
+    //   const path = [];
+    //   data.routes[0].sections.forEach(section => {
+    //     section.roads.forEach(road => {
+    //       for (let i = 0; i < road.vertexes.length; i += 2) {
+    //         path.push(new window.kakao.maps.LatLng(road.vertexes[i + 1], road.vertexes[i]));
+    //       }
+    //     });
+    //   });
+
+    //   polyline.value = new window.kakao.maps.Polyline({
+    //     path: path,
+    //     strokeWeight: 5,
+    //     strokeColor: '#3B82F6',
+    //     strokeOpacity: 0.8,
+    //     strokeStyle: 'solid',
+    //     strokeLineCap: 'round',
+    //     strokeLineJoin: 'round'
+    //   });
+
+    //   // 라인 애니메이션 효과 추가
+    //   const linePath = polyline.value.getPath();
+    //   const distanceOverlay = new window.kakao.maps.CustomOverlay({
+    //     content: '<div class="dotOverlay">총 거리 <span class="number"></span>km</div>',
+    //     position: linePath[linePath.length - 1],
+    //     yAnchor: 1,
+    //     zIndex: 2
+    //   });
+
+    //   let drawLine;
+    //   const drawAnim = () => {
+    //     drawLine = new window.kakao.maps.Polyline({
+    //       path: [linePath[0]],
+    //       strokeWeight: 5,
+    //       strokeColor: '#4CAF50',
+    //       strokeOpacity: 0.9,
+    //       strokeStyle: 'solid',
+    //       strokeLineCap: 'round',
+    //       strokeLineJoin: 'round'
+    //     });
+
+    //     drawLine.setMap(map.value);
+
+    //     let i = 1;
+    //     const timer = setInterval(() => {
+    //       if (i < linePath.length) {
+    //         drawLine.getPath().push(linePath[i]);
+    //         i++;
+    //       } else {
+    //         clearInterval(timer);
+    //         distanceOverlay.setMap(map.value);
+    //       }
+    //     }, 30);
+    //   };
+
+    //   polyline.value.setMap(map.value);
+    //   drawAnim();
+
+    //   // 지도 범위 재설정
+    //   const bounds = new window.kakao.maps.LatLngBounds();
+    //   path.forEach(position => bounds.extend(position));
+    //   map.value.setBounds(bounds);
+    // };
+
+    const createInfoWindow = (content, position) => {
+      if (infoWindow.value && typeof infoWindow.value.close === 'function') {
+        infoWindow.value.close();
+      }
+
+      infoWindow.value = new kakao.maps.InfoWindow({
+        content: content,
+        position: position,
+        removable: true
+      });
+
+      infoWindow.value.open(map.value);
+    };
+
+    const drawOptimizedRoute = (data) => {
+      if (!map.value || !window.kakao) return;
+
+      // 기존 폴리라인 제거
+      if (polyline.value) {
+        polyline.value.setMap(null);
+      }
+
+      const path = [];
+      data.routes[0].sections.forEach(section => {
+        section.roads.forEach(road => {
+          for (let i = 0; i < road.vertexes.length; i += 2) {
+            path.push(new window.kakao.maps.LatLng(road.vertexes[i + 1], road.vertexes[i]));
+          }
+        });
+      });
+
+      polyline.value = new window.kakao.maps.Polyline({
+        path: path,
+        strokeWeight: 5,
+        strokeColor: '#3B82F6',
+        strokeOpacity: 0.8,
+        strokeStyle: 'solid',
+        strokeLineCap: 'round',
+        strokeLineJoin: 'round'
+      });
+
+      polyline.value.setMap(map.value);
+
+      // 지도 범위 재설정
+      const bounds = new window.kakao.maps.LatLngBounds();
+      path.forEach(position => bounds.extend(position));
+      map.value.setBounds(bounds);
+
+      // 말풍선 내용 생성
+      const { duration, distance } = data.routes[0].summary;
+      const content = `
+    <div style="padding:10px; background:white; border-radius:5px;">
+      <h4 style="margin-bottom:5px;">경로 정보</h4>
+      <p>총 거리: ${(distance / 1000).toFixed(1)} km</p>
+      <p>예상 소요 시간: ${Math.round(duration / 60)} 분</p>
+    </div>
+  `;
+
+      // 인포윈도우 생성 및 표시
+      createInfoWindow(content, path[Math.floor(path.length / 2)]);
+    };
+
+
 
     const initWebSocket = () => {
       const ws = new WebSocket('ws://localhost:8080/trip-recommendation');
@@ -200,38 +368,39 @@ export default {
 
     const updateMarkers = () => {
       if (!map.value || !window.kakao) return;
-      
+
       // 기존 마커와 오버레이 제거
       markers.value.forEach(marker => marker.setMap(null));
       markers.value = [];
-      
+
       // 기존 Polyline 제거
       if (polyline.value) {
         polyline.value.setMap(null);
       }
-      
+
       const path = [];
-      
+
       planStore.selectedSpots.forEach((spot, index) => {
         const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
         path.push(position);
-        
+
         const marker = new window.kakao.maps.Marker({
           position: position,
           map: map.value
         });
-        
+
         const customOverlay = new window.kakao.maps.CustomOverlay({
           position: position,
-          content: `<div class="marker-label">${index + 1}</div>`,
+          //content: `< div class= "marker-label" > ${index + 1}</div > `,
+
           map: map.value,
           yAnchor: 0
         });
-        
+
         markers.value.push(marker);
         markers.value.push(customOverlay);
       });
-      
+
       // Polyline 그리기
       polyline.value = new window.kakao.maps.Polyline({
         path: path,
@@ -240,7 +409,7 @@ export default {
         strokeOpacity: 0.7,
         strokeStyle: 'solid'
       });
-      
+
       polyline.value.setMap(map.value);
       if (path.length > 0) {
         const bounds = new window.kakao.maps.LatLngBounds();
@@ -265,7 +434,7 @@ export default {
           // 줌 컨트롤
           const zoomControl = new window.kakao.maps.ZoomControl();
           map.value.addControl(zoomControl, window.kakao.maps.ControlPosition.RIGHT);
-      
+
           updateMarkers();
         });
       };
@@ -317,11 +486,11 @@ export default {
           alert('삭제할 계획이 없습니다.');
           return;
         }
-        
+
         if (confirm('정말로 이 계획을 삭제하시겠습니까?')) {
           await planStore.deletePlan({ planId: planStore.currentPlanId });
           alert('계획이 삭제되었습니다.');
-          router.push('/'); 
+          router.push('/');
         }
       } catch (error) {
         console.error('계획 삭제 실패:', error);
@@ -341,7 +510,9 @@ export default {
       getRecommendations,
       closeChat,
       chatContainer,
-      deleteCurrentPlan
+      deleteCurrentPlan,
+      getOptimizedRoute,
+      drawOptimizedRoute
     };
   }
 };
@@ -381,14 +552,29 @@ export default {
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .animate-bounce {
@@ -400,5 +586,4 @@ export default {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
 }
-
 </style>
