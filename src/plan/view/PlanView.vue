@@ -13,6 +13,7 @@
                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
           여행지 추가하기
         </button>
+        
       </div>
     </div>
 
@@ -87,6 +88,7 @@
     <!-- 하단 버튼 -->
 
     <div class="mt-6 flex justify-end space-x-4">
+      <button @click="deleteCurrentPlan" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">계획 삭제</button>
       <button @click="savePlan"
               class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
         계획 완료
@@ -309,6 +311,23 @@ export default {
         alert('계획 저장 중 오류가 발생했습니다.');
       }
     };
+    const deleteCurrentPlan = async () => {
+      try {
+        if (!planStore.currentPlanId) {
+          alert('삭제할 계획이 없습니다.');
+          return;
+        }
+        
+        if (confirm('정말로 이 계획을 삭제하시겠습니까?')) {
+          await planStore.deletePlan({ planId: planStore.currentPlanId });
+          alert('계획이 삭제되었습니다.');
+          router.push('/'); 
+        }
+      } catch (error) {
+        console.error('계획 삭제 실패:', error);
+        alert('계획 삭제 중 오류가 발생했습니다.');
+      }
+    };
 
     return {
       planStore,
@@ -321,8 +340,8 @@ export default {
       messages,
       getRecommendations,
       closeChat,
-      chatContainer
-
+      chatContainer,
+      deleteCurrentPlan
     };
   }
 };

@@ -30,7 +30,7 @@ onMounted(() => {
       <router-view />
     </main>
 
-    <FooterBar class="mt-auto" />
+    <!--<FooterBar class="mt-auto" />-->
   </div>
 </template>
 
