@@ -27,7 +27,7 @@ const fetchUserInfo = async () => {
       await mypageStore.fetchUserInfo(decoded.userId);
       userForm.value = { ...mypageStore.user };
     }
-    
+
   } catch (error) {
     console.error('사용자 정보 조회 실패:', error);
     alert('사용자 정보를 불러오는데 실패했습니다.');
@@ -41,26 +41,26 @@ const startChangingPassword = () => {
 
 // 사용자 정보 업데이트
 const updateUserInfo = async () => {
-  try {
+
     const updatedUser = { ...userForm.value };
-    
+
     if (isChangingPassword.value) {
       if (newPassword.value !== confirmPassword.value) {
         alert('새 비밀번호가 일치하지 않습니다.');
         return;
       }
-      
-      // 비밀번호 변경
-      const passwordChangeResponse = await api.post('/user/change-password', {
-        userId: userForm.value.id,
-        currentPassword: currentPassword.value,
-        newPassword: newPassword.value
-      });
-      
-      if (!passwordChangeResponse.data.success) {
-        alert('비밀번호 변경에 실패했습니다. 현재 비밀번호를 확인해주세요.');
-        return;
-      }
+
+      // // 비밀번호 변경
+      // const passwordChangeResponse = await api.post('/user/change-password', {
+      //   userId: userForm.value.id,
+      //   currentPassword: currentPassword.value,
+      //   newPassword: newPassword.value
+      // });
+
+      // if (!passwordChangeResponse.data.success) {
+      //   alert('비밀번호 변경에 실패했습니다. 현재 비밀번호를 확인해주세요.');
+      //   return;
+      // }
     }
 
     await mypageStore.updateUserInfo(updatedUser);
@@ -70,10 +70,7 @@ const updateUserInfo = async () => {
     currentPassword.value = '';
     newPassword.value = '';
     confirmPassword.value = '';
-  } catch (error) {
-    console.error('사용자 정보 수정 실패:', error);
-    alert('사용자 정보 수정에 실패했습니다.');
-  }
+
 };
 
 // 컴포넌트 마운트 시 사용자 정보 가져오기
