@@ -79,7 +79,7 @@
           <!-- 검색 결과 -->
           <div class="overflow-y-auto" style="height: calc(100% - 200px);">
             <div v-if="filteredSpots.length > 0" class="grid grid-cols-1 gap-4 p-4">
-              <div v-for="spot in filteredSpots" :key="spot.spotId" :id="'spot-' + spot.spotId" class="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer transform hover:scale-105 transition-transform duration-300" @click="showSpotOnMap(spot)">
+              <div v-for="spot in filteredSpots" :key="spot.spotId" class="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer transform hover:scale-105 transition-transform duration-300" @click="showSpotOnMap(spot)">
                 <img :src="spot.imagePath1 || defaultImage" :alt="spot.title" class="w-full h-32 object-cover">
                 <div class="p-3">
                   <h3 class="text-base font-semibold mb-1">{{ spot.title }}</h3>
@@ -360,7 +360,6 @@ export default {
       spots.value = [];
       hasSearched.value = false;
       sigungus.value = [];
-      filteredSpots.value = [];
       clearMarkers(); // 마커 제거
 
       if (map && window.kakao && window.kakao.maps) {
@@ -429,23 +428,6 @@ export default {
       map.setLevel(3); // 스팟 선택 시 줌 레벨을 3으로 설정
       mapZoomLevel.value = 3;
     };
-
-
-    const highlightSpotInList = (spotId) => {
-  const spotElement = document.getElementById(`spot-${spotId}`);
-  if (spotElement) {
-    // 요소로 스크롤
-    spotElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-    // 강조 표시를 위한 CSS 클래스 추가
-    spotElement.classList.add('highlight');
-
-    // 일정 시간 후 강조 표시 제거
-    setTimeout(() => {
-      spotElement.classList.remove('highlight');
-    }, 2000);
-  }
-};
 
     const zoomIn = () => {
       if (map) {
@@ -808,9 +790,3 @@ export default {
   }
 };
 </script>
-<style scoped>
-.highlight {
-  background-color: #ffeb3b;
-  transition: background-color 0.3s ease;
-}
-</style>

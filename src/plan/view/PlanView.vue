@@ -14,15 +14,13 @@
       </div>
 
       <div class="flex gap-2">
-        <button @click="getOptimizedRoute"
-  class="px-4 py-2  text-yellow-400 rounded-md transition-colors border border-yellow-400 hover:bg-yellow-400 hover:text-white">
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
-</svg>
+  <button @click="getOptimizedRoute" class="px-4 py-2 bg-yellow-400 text-white rounded-md transition-colors hover:bg-yellow-500">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+    </svg>
 
-</button>
-
-      </div>
+  </button>
+</div>
     </div>
 
     <div class="flex gap-4">
@@ -53,45 +51,72 @@
       </div>
 
 
-      <!-- 중앙: 지도 -->
-      <div :class="{ 'w-2/4': showChat, 'w-3/4': !showChat }" class="transition-all duration-300">
+      <div :class="{
+        'w-2/4': showChat || showGuidePanel,
+        'w-3/4': !showChat && !showGuidePanel
+      }" class="transition-all duration-300">
         <div id="map" class="w-full h-[600px] rounded-lg shadow-md"></div>
       </div>
 
-      <!-- 우측: 추천 채팅창 -->
-      <div v-if="showChat" class="w-1/4 transition-all duration-300">
-        <div class="bg-white rounded-lg shadow-lg h-[600px] flex flex-col">
-          <div class="flex justify-between items-center p-4 border-b">
-            <div class="flex items-center gap-2">
-              <h3 class="font-bold">여행지 추천</h3>
-              <span class="beta-tag">Beta</span>
-            </div>
-            <button @click="closeChat" class="text-gray-500 hover:text-gray-700">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-      </svg>
-            </button>
+      <!-- 우측: 추천 채팅창 또는 길 안내 패널 -->
+<div v-if="showChat || showGuidePanel" class="w-1/4 transition-all duration-300">
+  <!-- 챗봇 패널 -->
+  <div v-if="showChat" class="bg-white rounded-lg shadow-lg h-[600px] flex flex-col">
+    <div class="flex justify-between items-center p-4 border-b">
+      <div class="flex items-center gap-2">
+        <h3 class="font-bold">여행지 추천</h3>
+        <span class="beta-tag">Beta</span>
+      </div>
+      <button @click="closeChat" class="text-gray-500 hover:text-gray-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4" ref="chatContainer">
+      <div v-for="(message, index) in messages" :key="index" class="mb-4">
+        <div class="p-3 rounded-lg bg-gray-100">
+          <div v-if="message.loading" class="flex gap-1">
+            <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+            <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+            <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
           </div>
-          <div class="flex-1 overflow-y-auto p-4" ref="chatContainer">
-            <div v-for="(message, index) in messages" :key="index" class="mb-4">
-              <div class="p-3 rounded-lg bg-gray-100">
-                <div v-if="message.loading" class="flex gap-1">
-                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
-                </div>
-                <div v-else v-html="message.content"></div>
-              </div>
-            </div>
-          </div>
+          <div v-else v-html="message.content"></div>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- 길 안내 패널 -->
+  <div v-if="showGuidePanel" class="bg-white rounded-lg shadow-lg h-[600px] flex flex-col">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h2 class="text-xl font-bold">상세 경로</h2>
+      <button @click="closeGuidePanel" class="text-gray-500 hover:text-gray-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4">
+      <div v-for="(guide, index) in guideMessages" :key="index" class="mb-4 p-3 bg-gray-50 rounded-lg">
+        <p class="font-semibold">{{ index + 1 }}. {{ guide.guidance }}</p>
+        <p class="text-sm text-gray-600">
+          거리: {{ (guide.distance / 1000).toFixed(1) }}km<br>
+          예상 시간: {{ Math.round(guide.duration / 60) }}분
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+    </div>
+
+
 
     <!-- 하단 버튼 -->
 
-    <div class="fixed bottom-0 right-[50px] p-6 flex justify-end space-y-4">
+    <div class="fixed bottom-0 right-0 p-6 flex justify-end items-center w-full bg-white bg-opacity-80">
   <!-- 체크와 x 버튼을 감싸는 div -->
+
   <div class="flex justify-start space-x-4 mb-4 mr-[100px]">
     <button @click="deleteCurrentPlan"
       class="px-4 py-2 text-red-500 rounded-full hover:bg-red-700 hover:text-white transition-colors">
@@ -105,7 +130,9 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
       </svg>
     </button>
+
   </div>
+
 
   <!-- 챗 버튼을 위한 별도의 div -->
   <div class="flex justify-end">
@@ -132,6 +159,9 @@ export default {
   },
 
   setup() {
+    const showGuidePanel = ref(false);
+    const guideMessages = ref([]);
+    const showGuideModal = ref(false);
     const planStore = usePlanStore();
     const map = ref(null);
     const markers = ref([]);
@@ -146,40 +176,56 @@ export default {
     const infoWindow = ref(null);
     const chatbot = '/src/assets/chatbot.png';
 
+
+
     const getOptimizedRoute = async () => {
-      if (planStore.selectedSpots.length < 2) {
-        alert('최소 2개 이상의 여행지를 선택해주세요.');
-        return;
+  if (planStore.selectedSpots.length < 2) {
+    alert('최소 2개 이상의 여행지를 선택해주세요.');
+    return;
+  }
+
+  const origin = planStore.selectedSpots[0];
+  const destination = planStore.selectedSpots[planStore.selectedSpots.length - 1];
+  const waypoints = planStore.selectedSpots.slice(1, -1).map(spot => ({
+    name: spot.title,
+    x: spot.longitude,
+    y: spot.latitude
+  }));
+
+  try {
+    const response = await axios.post('https://apis-navi.kakaomobility.com/v1/waypoints/directions', {
+      origin: { x: origin.longitude, y: origin.latitude },
+      destination: { x: destination.longitude, y: destination.latitude },
+      waypoints: waypoints,
+      priority: 'RECOMMEND',
+      summary: false
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `KakaoAK ${kakaoApiKey}`
       }
+    });
 
-      const origin = planStore.selectedSpots[0];
-      const destination = planStore.selectedSpots[planStore.selectedSpots.length - 1];
-      const waypoints = planStore.selectedSpots.slice(1, -1).map(spot => ({
-        name: spot.title,
-        x: spot.longitude,
-        y: spot.latitude
-      }));
+    drawOptimizedRoute(response.data);
+    guideMessages.value = response.data.routes[0].sections.flatMap(section => section.guides);
 
-      try {
-        const response = await axios.post('https://apis-navi.kakaomobility.com/v1/waypoints/directions', {
-          origin: { x: origin.longitude, y: origin.latitude },
-          destination: { x: destination.longitude, y: destination.latitude },
-          waypoints: waypoints,
-          priority: 'RECOMMEND'
-        }, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `KakaoAK ${kakaoApiKey}`
+    // 길 안내 패널 자동으로 열기
+    showChat.value = false; // 챗봇 패널이 열려있다면 닫기
+    showGuidePanel.value = true;
 
-          }
-        });
-
-        drawOptimizedRoute(response.data);
-      } catch (error) {
-        console.error('경로 최적화 요청 실패:', error);
-        alert('경로 최적화 중 오류가 발생했습니다.');
-      }
-    };
+    // 지도 범위 재설정
+    if (map.value && polyline.value) {
+      const bounds = new window.kakao.maps.LatLngBounds();
+      polyline.value.getPath().forEach(position => bounds.extend(position));
+      setTimeout(() => {
+        map.value.setBounds(bounds);
+      }, 300);
+    }
+  } catch (error) {
+    console.error('경로 최적화 요청 실패:', error);
+    alert('경로 최적화 중 오류가 발생했습니다.');
+  }
+};
 
     // const drawOptimizedRoute = (data) => {
     //   if (!map.value || !window.kakao) return;
@@ -252,6 +298,8 @@ export default {
     //   map.value.setBounds(bounds);
     // };
 
+
+
     const createInfoWindow = (content, position) => {
       if (infoWindow.value && typeof infoWindow.value.close === 'function') {
         infoWindow.value.close();
@@ -265,6 +313,26 @@ export default {
 
       infoWindow.value.open(map.value);
     };
+
+    const showGuideInstructions = () => {
+      if (guideMessages.value.length > 0) {
+        showGuidePanel.value = true;
+        // 지도 범위 재설정
+        if (map.value && polyline.value) {
+          const bounds = new window.kakao.maps.LatLngBounds();
+          polyline.value.getPath().forEach(position => bounds.extend(position));
+          setTimeout(() => {
+            map.value.setBounds(bounds);
+          }, 300);
+        }
+      } else {
+        alert('경로 안내 정보가 없습니다. 경로를 먼저 최적화해주세요.');
+      }
+    };
+
+    const closeGuidePanel = () => {
+    showGuidePanel.value = false;
+  };
 
     const drawOptimizedRoute = (data) => {
       if (!map.value || !window.kakao) return;
@@ -295,30 +363,35 @@ export default {
 
       polyline.value.setMap(map.value);
 
+      guideMessages.value = data.routes[0].sections.flatMap(section => section.guides);
+
       // 지도 범위 재설정
       const bounds = new window.kakao.maps.LatLngBounds();
       path.forEach(position => bounds.extend(position));
       map.value.setBounds(bounds);
 
+      const guides = data.routes[0].sections.flatMap(section => section.guides);
+      console.log('길 안내 정보:', guides);
+
       // 말풍선 내용 생성
       const { duration, distance } = data.routes[0].summary;
       const content = `
-  <div style="padding:15px; background:white; border-radius:15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); min-width: 200px; border: 2px solid;">
-    <h4 style="margin:0 0 10px 0; color:#4B5563; font-size:16px; font-weight:600; border-bottom: 1px solid #E5E7EB; padding-bottom:8px;">
-      🚗 경로 정보
-    </h4>
-    <div style="display:flex; flex-direction:column; gap:8px;">
-      <p style="margin:0; color:#6B7280; font-size:14px;">
-        <span style="color:#3B82F6; font-weight:600;">총 거리:</span> 
-        ${(distance / 1000).toFixed(1)} km
-      </p>
-      <p style="margin:0; color:#6B7280; font-size:14px;">
-        <span style="color:#3B82F6; font-weight:600;">예상 소요 시간:</span> 
-        ${Math.round(duration / 60)} 분
-      </p>
-    </div>
-  </div>
-`;
+      <div style="padding:15px; background:white; border-radius:15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); min-width: 200px; border: 2px solid;">
+        <h4 style="margin:0 0 10px 0; color:#4B5563; font-size:16px; font-weight:600; border-bottom: 1px solid #E5E7EB; padding-bottom:8px;">
+          🚗 경로 정보
+        </h4>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <p style="margin:0; color:#6B7280; font-size:14px;">
+            <span style="color:#3B82F6; font-weight:600;">총 거리:</span>
+            ${(distance / 1000).toFixed(1)} km
+          </p>
+          <p style="margin:0; color:#6B7280; font-size:14px;">
+            <span style="color:#3B82F6; font-weight:600;">예상 소요 시간:</span>
+            ${Math.round(duration / 60)} 분
+          </p>
+        </div>
+      </div>
+    `;
 
       // 인포윈도우 생성 및 표시
       createInfoWindow(content, path[Math.floor(path.length / 2)]);
@@ -405,42 +478,42 @@ export default {
 
     const updateMarkers = () => {
   if (!map.value || !window.kakao) return;
-  
+
   // 기존 마커와 오버레이 제거
   markers.value.forEach(marker => marker.setMap(null));
   markers.value = [];
-  
+
   // 기존 Polyline 제거
   if (polyline.value) {
     polyline.value.setMap(null);
   }
-  
+
   const path = [];
-  
+
   planStore.selectedSpots.forEach((spot, index) => {
     const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
     path.push(position);
-    
+
     // 마커 생성
     const marker = new window.kakao.maps.Marker({
       position: position,
       map: map.value
     });
-    
+
     // 인덱스를 표시할 커스텀 오버레이 생성
     const content = `
       <div class="marker-label bg-white px-2 py-1 rounded-full border-2 border-blue-500 font-bold text-blue-500">
         ${index + 1}
       </div>
     `;
-    
+
     const customOverlay = new window.kakao.maps.CustomOverlay({
       position: position,
       content: content,
       map: map.value,
       yAnchor: 1.4
     });
-    
+
     markers.value.push(marker);
     markers.value.push(customOverlay);
   });
@@ -453,7 +526,7 @@ export default {
     strokeOpacity: 0.7,
     strokeStyle: 'solid'
   });
-  
+
   polyline.value.setMap(map.value);
 
   if (path.length > 0) {
@@ -557,7 +630,11 @@ export default {
       deleteCurrentPlan,
       getOptimizedRoute,
       drawOptimizedRoute,
-      chatbot
+      chatbot,
+      guideMessages,
+  showGuideModal,
+  showGuideInstructions,
+  showGuidePanel,closeGuidePanel
     };
   }
 };
@@ -630,5 +707,19 @@ export default {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
+}
+.sticky {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+
+.mt-16 {
+  margin-top: 4rem;
+}
+
+.transition-all {
+  transition: all 0.3s ease-in-out;
 }
 </style>
