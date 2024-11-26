@@ -89,10 +89,26 @@
                   <div class="star-rating">
             <span v-for="n in 5" :key="n" :class="{ 'text-yellow-500': n <= Math.round(spot.avgScore), 'text-gray-300': n > Math.round(spot.avgScore) }">★</span>
         </div>
-                  <button @click.stop="toggleSpotSelection(spot)"
-                    class="mt-1 px-2 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-300">
-                    {{ isSpotSelected(spot) ? '선택 취소' : '선택하기' }}
-                  </button>
+        <button @click.stop="toggleSpotSelection(spot)"
+  class="mt-1 px-2 py-1 text-sm rounded-md transition-colors duration-300"
+  :class="isSpotSelected(spot) ? 'text-green-500' : 'text-gray-500'">
+  <svg xmlns="http://www.w3.org/2000/svg" 
+       fill="none" 
+       viewBox="0 0 24 24" 
+       stroke-width="1.5" 
+       stroke="currentColor" 
+       class="size-6">
+    <path v-if="isSpotSelected(spot)" 
+    stroke-linecap="round" 
+          stroke-linejoin="round" 
+          d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <path v-else 
+          
+    stroke-linecap="round" 
+          stroke-linejoin="round" 
+          d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+</button>
                 </div>
               </div>
             </div>
@@ -125,14 +141,14 @@
           </div>
 
           <!-- 하단 버튼 그룹 -->
-          <div class="absolute bottom-4 left-0 right-0 flex justify-between px-4 z-10">
-            <!-- 현재 지도 위치로 검색 버튼 -->
-            <div class="flex-1 flex justify-center">
-              <button @click="searchNearbySpots" class="group bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-3 rounded-full hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-blue-200/50 hover:scale-105 flex items-center space-x-2">
-                  <i class="fas fa-search text-lg group-hover:rotate-12 transition-transform duration-300"></i>
-                  <span class="font-medium">지도 내 검색</span>
-              </button>
-            </div>
+          <div class="absolute bottom-4 left-0 right-0 flex justify-end px-4 z-10">
+  <!-- 지도 내 검색 버튼 -->
+  <div class="flex-1 flex justify-center mr-4">
+    <button @click="searchNearbySpots" class="group bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-3 rounded-full hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-blue-200/50 hover:scale-105 flex items-center space-x-2">
+      <i class="fas fa-search text-lg group-hover:rotate-12 transition-transform duration-300"></i>
+      <span class="font-medium">지도 내 검색</span>
+    </button>
+  </div>
             <!-- 여행 계획 생성 버튼과 드롭다운 패널 -->
             <div class="relative">
                 <!-- 여행 계획 생성 드롭다운 패널 -->
@@ -161,6 +177,15 @@
                     <i class="fas fa-plus text-lg group-hover:rotate-180 transition-transform duration-500"></i>
                     <span class="font-medium">나만의 일정 만들기</span>
                 </button>
+                <button  v-if="route.query.planId" @click="continuePlan" 
+                class="group bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-full hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-green-200/50 hover:scale-105 flex items-center space-x-2">
+  <div class="flex items-center gap-2">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+</svg>
+
+  </div>
+</button>
             </div>
 
           </div>

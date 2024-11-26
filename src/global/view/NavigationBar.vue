@@ -16,13 +16,22 @@
 
         <!-- 네비게이션 링크 -->
         <nav class="flex space-x-2 sm:space-x-4 mb-2 sm:mb-0">
-          <router-link to="/spot" :class="['banner-button text-sm', isHome ? 'text-white' : 'text-gray-600']">
-            여행지 검색하기
+          <router-link 
+            to="/spot" 
+            :class="['banner-button text-sm', isHome ? 'text-white' : 'text-gray-600']"
+            active-class="active-text-indigo">
+            플랜 만들기
           </router-link>
-          <router-link to="/review" :class="['banner-button text-sm', isHome ? 'text-white' : 'text-gray-600']">
+          <router-link 
+            to="/review" 
+            :class="['banner-button text-sm', isHome ? 'text-white' : 'text-gray-600']"
+            active-class="active-text-indigo">
             리뷰
           </router-link>
-          <router-link to="/notice" :class="['banner-button text-sm', isHome ? 'text-white' : 'text-gray-600']">
+          <router-link 
+            to="/notice" 
+            :class="['banner-button text-sm', isHome ? 'text-white' : 'text-gray-600']"
+            active-class="active-text-indigo">
             공지사항
           </router-link>
         </nav>
@@ -40,7 +49,7 @@
           <!-- 마이페이지/로그아웃 -->
           <template v-else>
             <router-link to="/user/mypage" :class="['login-button text-sm', isHome ? 'text-white border-white' : 'text-gray-600 border-gray-600']">
-            마이페이지
+              마이페이지
             </router-link>
             <button @click="handleLogout" :class="['login-button text-sm', isHome ? 'text-white border-white' : 'text-gray-600 border-gray-600']">
               로그아웃
@@ -51,6 +60,7 @@
     </div>
   </div>
 </template>
+
 
 <script>
 import { computed } from 'vue'
@@ -89,24 +99,39 @@ export default {
 <style scoped>
 .banner-button {
   padding: 10px 20px;
+  font-size: 1rem; /* 글자 크기 키움 (16px) */
   background-color: transparent;
-  border-radius: 5px;
-  transition: all 0.3s;
+  border-radius: 5px; /* 기본 둥근 모서리 */
+  transition: all 0.3s ease-in-out;
 }
 
 .banner-button:hover {
-  background-color: rgba(156, 163, 175, 0.1);
+  background-color: rgba(156, 163, 175, 0.5); /* hover 색상 진하게 */
+  border-radius: 20px; /* hover 상태에서 더 둥글게 */
+}
+
+.active-text-indigo {
+  color: #6366F1; /* indigo 색상 */
+  font-weight: bold; /* 활성화된 링크를 강조 */
 }
 
 .login-button {
   padding: 8px 16px;
-  border: 2px solid;
-  border-radius: 5px;
-  transition: all 0.3s;
+  font-size: 1rem; /* 글자 크기 키움 (16px) */
+  font-weight: bold; /* 글자 굵게 */
+  border: none; /* 테두리 제거 */
+  border-radius: 5px; /* 기본 둥근 모서리 */
+  transition: all 0.3s ease-in-out;
   background-color: transparent;
 }
 
 .login-button:hover {
-  background-color: rgba(156, 163, 175, 0.1);
+  background-color: rgba(156, 163, 175, 0.5); /* hover 색상 진하게 */
+  border-radius: 20px; /* hover 상태에서 더 둥글게 */
 }
 </style>
+
+
+
+
+

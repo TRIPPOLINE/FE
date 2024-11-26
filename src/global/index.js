@@ -49,8 +49,7 @@ const router = createRouter({
     {
       path: '/spot',
       name: 'spot',
-      component: SearchView,
-      meta: { requiresAuth: true }
+      component: SearchView
     },
     {
       path: '/user/join',

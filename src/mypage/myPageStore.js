@@ -72,6 +72,7 @@ export const useMypageStore = defineStore('mypage', {
       try {
         const response = await api.get(`/user/select/${userId}`);
         this.user = response.data;
+        console.log(`info`,response);
       } catch (error) {
         this.error = error.message;
         console.error('사용자 정보 조회 실패:', error);
@@ -234,15 +235,32 @@ async fetchUserReviews(userId) {
       try {
         const formData = new FormData();
     
-        formData.append('reviewUpdateJson', JSON.stringify({
+        // formData.append('reviewUpdateJson', JSON.stringify({
+        //   reviewNo: reviewData.reviewNo,
+        //   userId: this.user.id, 
+        //   title: reviewData.title,
+        //   content: reviewData.content,
+        //   score: reviewData.score,
+        //   deletePhotoUrls: reviewData.deletePhotoUrls || [] 
+        // }));
+        
+        const reviewUpdateJson = {
           reviewNo: reviewData.reviewNo,
           userId: this.user, 
           title: reviewData.title,
           content: reviewData.content,
           score: reviewData.score,
-          deletePhotoUrls: reviewData.deletePhotoUrls || [] 
-        }));
-        console.log(`formData`, formData);
+          deletePhotoUrls: reviewData.deletePhotoUrls || []
+        };
+        //console.log(this.user);
+    
+        formData.append('reviewUpdateJson', JSON.stringify(reviewUpdateJson));
+    
+        // FormData 값 확인하기
+        // console.log('reviewUpdateJson:', reviewUpdateJson);
+        // console.log('FormData content:', formData.get('reviewUpdateJson'));
+
+        // console.log(`formData::::`, formData.title);
        
         if (reviewData.newPhotos && reviewData.newPhotos.length > 0) {
           reviewData.newPhotos.forEach(photo => {

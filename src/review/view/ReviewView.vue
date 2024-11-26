@@ -90,7 +90,7 @@
                 <p class="text-gray-500">{{ formatDate(selectedReview.writeAt) }}</p>
               </div>
             </div>
-            <img :src="getReviewImage(selectedReview)" :alt="selectedReview.title" class="w-full h-64 object-cover mb-4 rounded">
+            
             <h2 class="text-2xl font-bold mb-4">{{ selectedReview.title }}</h2>
             <p class="mb-4">{{ selectedReview.content }}</p>
             <div class="flex items-center justify-between mb-4">
@@ -101,6 +101,14 @@
               <h3 class="font-bold mb-2">스팟 정보</h3>
               <p class="flex items-center"><i class="fas fa-map-marker-alt mr-2 text-red-500"></i> {{ selectedReview.spotTitle }} </p>
               <p class="mt-2">{{ selectedReview.spotAddr1 }}</p>
+            </div>
+            <div v-if="selectedReview.photoUrls && selectedReview.photoUrls.length > 0" 
+                class="grid grid-cols-2 gap-4 mb-4">
+              <img v-for="(photo, index) in selectedReview.photoUrls" 
+                  :key="index"
+                  :src="photo" 
+                  :alt="selectedReview.title"
+                  class="w-full h-48 object-cover rounded">
             </div>
             <button @click="closeModal" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300">닫기</button>
           </div>

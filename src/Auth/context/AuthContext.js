@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('accessToken', response.accessToken);
       localStorage.setItem('refreshToken', response.refreshToken);
       setUser({ userId });
+      console.log(response);
     } catch (error) {
       console.error('로그인 실패:', error);
     }
