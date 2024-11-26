@@ -185,7 +185,7 @@ const handleSubmit = async () => {
     const response = await axios.post('http://localhost:8080/api/user/join', formData.value);
     if (response.status === 201) {
       alert('회원가입이 완료되었습니다.');
-      router.push('/login');
+      router.push('/user/login');
     }
   } catch (error) {
     console.error('회원가입 실패:', error);
