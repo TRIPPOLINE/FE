@@ -334,68 +334,68 @@ export default {
     showGuidePanel.value = false;
   };
 
-    const drawOptimizedRoute = (data) => {
-      if (!map.value || !window.kakao) return;
+  const drawOptimizedRoute = (data) => {
+  if (!map.value || !window.kakao) return;
 
-      // 기존 폴리라인 제거
-      if (polyline.value) {
-        polyline.value.setMap(null);
+  // 기존 폴리라인 제거
+  if (polyline.value) {
+    polyline.value.setMap(null);
+  }
+
+  const path = [];
+  data.routes[0].sections.forEach(section => {
+    section.roads.forEach(road => {
+      for (let i = 0; i < road.vertexes.length; i += 2) {
+        path.push(new window.kakao.maps.LatLng(road.vertexes[i + 1], road.vertexes[i]));
       }
+    });
+  });
 
-      const path = [];
-      data.routes[0].sections.forEach(section => {
-        section.roads.forEach(road => {
-          for (let i = 0; i < road.vertexes.length; i += 2) {
-            path.push(new window.kakao.maps.LatLng(road.vertexes[i + 1], road.vertexes[i]));
-          }
-        });
-      });
+  polyline.value = new window.kakao.maps.Polyline({
+    path: path,
+    strokeWeight: 5,
+    strokeColor: '#FF4500',
+    strokeOpacity: 0.8,
+    strokeStyle: 'solid',
+    strokeLineCap: 'round',
+    strokeLineJoin: 'round'
+  });
+  polyline.value.setMap(map.value);
 
-      polyline.value = new window.kakao.maps.Polyline({
-        path: path,
-        strokeWeight: 5,
-        strokeColor: '#FF4500',
-        strokeOpacity: 0.8,
-        strokeStyle: 'solid',
-        strokeLineCap: 'round',
-        strokeLineJoin: 'round'
-      });
+  guideMessages.value = data.routes[0].sections.flatMap(section => section.guides);
 
-      polyline.value.setMap(map.value);
+  // 지도 범위 재설정
+  const bounds = new window.kakao.maps.LatLngBounds();
+  path.forEach(position => bounds.extend(position));
+  map.value.setBounds(bounds);
 
-      guideMessages.value = data.routes[0].sections.flatMap(section => section.guides);
+  const guides = data.routes[0].sections.flatMap(section => section.guides);
+  console.log('길 안내 정보:', guides);
 
-      // 지도 범위 재설정
-      const bounds = new window.kakao.maps.LatLngBounds();
-      path.forEach(position => bounds.extend(position));
-      map.value.setBounds(bounds);
-
-      const guides = data.routes[0].sections.flatMap(section => section.guides);
-      console.log('길 안내 정보:', guides);
-
-      // 말풍선 내용 생성
-      const { duration, distance } = data.routes[0].summary;
-      const content = `
-      <div style="padding:15px; background:white; border-radius:15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); min-width: 200px; border: 2px solid;">
-        <h4 style="margin:0 0 10px 0; color:#4B5563; font-size:16px; font-weight:600; border-bottom: 1px solid #E5E7EB; padding-bottom:8px;">
-          🚗 경로 정보
-        </h4>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          <p style="margin:0; color:#6B7280; font-size:14px;">
-            <span style="color:#3B82F6; font-weight:600;">총 거리:</span>
-            ${(distance / 1000).toFixed(1)} km
-          </p>
-          <p style="margin:0; color:#6B7280; font-size:14px;">
-            <span style="color:#3B82F6; font-weight:600;">예상 소요 시간:</span>
-            ${Math.round(duration / 60)} 분
-          </p>
-        </div>
+  // 말풍선 내용 생성
+  const { duration, distance, fare } = data.routes[0].summary;
+  const content = `
+    <div style="padding:15px; background:white; border-radius:15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); min-width: 200px; border: 2px solid;">
+      <h4 style="margin:0 0 10px 0; color:#4B5563; font-size:16px; font-weight:600; border-bottom: 1px solid #E5E7EB; padding-bottom:8px;">
+        🚗 경로 정보
+      </h4>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <p style="margin:0; color:#6B7280; font-size:14px;">
+          <span style="color:#3B82F6; font-weight:600;">총 거리:</span> ${(distance / 1000).toFixed(1)} km
+        </p>
+        <p style="margin:0; color:#6B7280; font-size:14px;">
+          <span style="color:#3B82F6; font-weight:600;">예상 소요 시간:</span> ${Math.round(duration / 60)} 분
+        </p>
+        <p style="margin:0; color:#6B7280; font-size:14px;">
+          <span style="color:#3B82F6; font-weight:600;">예상 택시 요금:</span> ${fare.taxi.toLocaleString()}원
+        </p>
       </div>
-    `;
+    </div>
+  `;
 
-      // 인포윈도우 생성 및 표시
-      createInfoWindow(content, path[Math.floor(path.length / 2)]);
-    };
+  // 인포윈도우 생성 및 표시
+  createInfoWindow(content, path[Math.floor(path.length / 2)]);
+};
 
 
 
