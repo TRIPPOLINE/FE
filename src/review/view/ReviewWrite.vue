@@ -63,7 +63,7 @@
         <!-- 파일 업로드 부분 수정 -->
 <div class="mb-4">
   <label class="block text-gray-700 text-sm font-bold mb-2">
-    사진 첨부 (여러 장 선택 가능)
+    사진 첨부
   </label>
   <input 
     type="file" 
