@@ -78,10 +78,8 @@
 
           <!-- 검색 결과 -->
           <div class="overflow-y-auto" style="height: calc(100% - 200px);">
-            <div v-if="spots.length > 0" class="grid grid-cols-1 gap-4 p-4">
-              <div v-for="spot in filteredSpots" :key="spot.spotId"
-                class="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer transform hover:scale-105 transition-transform duration-300"
-                @click="showSpotOnMap(spot)">
+            <div v-if="filteredSpots.length > 0" class="grid grid-cols-1 gap-4 p-4">
+              <div v-for="spot in filteredSpots" :key="spot.spotId" :id="'spot-' + spot.spotId" class="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer transform hover:scale-105 transition-transform duration-300" @click="showSpotOnMap(spot)">
                 <img :src="spot.imagePath1 || defaultImage" :alt="spot.title" class="w-full h-32 object-cover">
                 <div class="p-3">
                   <h3 class="text-base font-semibold mb-1">{{ spot.title }}</h3>
@@ -92,20 +90,20 @@
         <button @click.stop="toggleSpotSelection(spot)"
   class="mt-1 px-2 py-1 text-sm rounded-md transition-colors duration-300"
   :class="isSpotSelected(spot) ? 'text-green-500' : 'text-gray-500'">
-  <svg xmlns="http://www.w3.org/2000/svg" 
-       fill="none" 
-       viewBox="0 0 24 24" 
-       stroke-width="1.5" 
-       stroke="currentColor" 
+  <svg xmlns="http://www.w3.org/2000/svg"
+       fill="none"
+       viewBox="0 0 24 24"
+       stroke-width="1.5"
+       stroke="currentColor"
        class="size-6">
-    <path v-if="isSpotSelected(spot)" 
-    stroke-linecap="round" 
-          stroke-linejoin="round" 
+    <path v-if="isSpotSelected(spot)"
+    stroke-linecap="round"
+          stroke-linejoin="round"
           d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    <path v-else 
-          
-    stroke-linecap="round" 
-          stroke-linejoin="round" 
+    <path v-else
+
+    stroke-linecap="round"
+          stroke-linejoin="round"
           d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 </button>
@@ -177,7 +175,7 @@
                     <i class="fas fa-plus text-lg group-hover:rotate-180 transition-transform duration-500"></i>
                     <span class="font-medium">나만의 일정 만들기</span>
                 </button>
-                <button  v-if="route.query.planId" @click="continuePlan" 
+                <button  v-if="route.query.planId" @click="continuePlan"
                 class="group bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-full hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-green-200/50 hover:scale-105 flex items-center space-x-2">
   <div class="flex items-center gap-2">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -256,6 +254,9 @@ export default {
     const hasSearched = ref(false);
     const currentPlanId = ref('');
     const searchKeyword = ref('');
+    const filteredSpots = ref([]);
+
+
 
     const sidos = ref([]);
     const sigungus = ref([]);
@@ -272,14 +273,15 @@ export default {
 
     let map = null;
 
-    const filteredSpots = computed(() => {
-      if (!searchKeyword.value) return spots.value;
-      const keyword = searchKeyword.value.toLowerCase();
-      return spots.value.filter(spot =>
-        spot.title.toLowerCase().includes(keyword) ||
-        spot.frontAddress.toLowerCase().includes(keyword)
-      );
-    });
+    // const filteredSpots = computed(() => {
+    //   if (!searchKeyword.value) return spots.value;
+    //   const keyword = searchKeyword.value.toLowerCase();
+    //   return spots.value.filter(spot =>
+    //     spot.title.toLowerCase().includes(keyword) ||
+    //     spot.frontAddress.toLowerCase().includes(keyword)
+    //   );
+    // });
+
 
     const handleSidoChange = async (e) => {
       const value = e.target.value
@@ -310,47 +312,46 @@ export default {
 
 
     const searchSpots = async () => {
-      if (!selectedSido.value) {
-        alert('시/도를 선택해주세요.');
-        return;
-      }
+  if (!selectedSido.value) {
+    alert('시/도를 선택해주세요.');
+    return;
+  }
+  hasSearched.value = true;
+  try {
+    const response = await spotStore.searchSpots({
+      areaCode: selectedSido.value,
+      siGunGuCode: selectedSigungu.value || null,
+      contentTypeId: selectedSpotType.value || null,
+      keyword: searchKeyword.value
+    });
+    spots.value = response;
+    filteredSpots.value = response; // 검색 결과를 filteredSpots에 저장
 
-      hasSearched.value = true;
-      try {
-        const response = await spotStore.searchSpots({
-          areaCode: selectedSido.value,
-          siGunGuCode: selectedSigungu.value || null,  // 시군구가 선택되지 않았을 때 null로 설정
-          contentTypeId: selectedSpotType.value || null,
-          keyword: searchKeyword.value
+    if (map && window.kakao && window.kakao.maps) {
+      clearMarkers();
+      const bounds = new window.kakao.maps.LatLngBounds();
+      if (Array.isArray(spots.value)) {
+        spots.value.forEach(spot => {
+          const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
+          bounds.extend(position);
+          addMarker(spot);
         });
-
-        spots.value = response;
-        if (map && window.kakao && window.kakao.maps) {
-          clearMarkers();
-          const bounds = new window.kakao.maps.LatLngBounds();
-
-          if (Array.isArray(spots.value)) {
-            spots.value.forEach(spot => {
-              const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
-              bounds.extend(position);
-              addMarker(spot);
-            });
-
-            if (spots.value.length > 0) {
-              map.setBounds(bounds);
-              const level = map.getLevel();
-              map.setLevel(level + 1);
-            }
-          } else {
-            console.error('spots.value is not an array:', spots.value);
-          }
+        if (spots.value.length > 0) {
+          map.setBounds(bounds);
+          const level = map.getLevel();
+          map.setLevel(level + 1);
         }
-      } catch (error) {
-        console.error('검색 중 오류 발생:', error);
-        alert('검색 중 오류가 발생했습니다.');
-        spots.value = [];
+      } else {
+        console.error('spots.value is not an array:', spots.value);
       }
-    };
+    }
+  } catch (error) {
+    console.error('검색 중 오류 발생:', error);
+    alert('검색 중 오류가 발생했습니다.');
+    spots.value = [];
+    filteredSpots.value = [];
+  }
+};
 
     const resetSearch = () => {
       selectedSido.value = '';
@@ -359,6 +360,7 @@ export default {
       spots.value = [];
       hasSearched.value = false;
       sigungus.value = [];
+      filteredSpots.value = [];
       clearMarkers(); // 마커 제거
 
       if (map && window.kakao && window.kakao.maps) {
@@ -427,6 +429,23 @@ export default {
       map.setLevel(3); // 스팟 선택 시 줌 레벨을 3으로 설정
       mapZoomLevel.value = 3;
     };
+
+
+    const highlightSpotInList = (spotId) => {
+  const spotElement = document.getElementById(`spot-${spotId}`);
+  if (spotElement) {
+    // 요소로 스크롤
+    spotElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // 강조 표시를 위한 CSS 클래스 추가
+    spotElement.classList.add('highlight');
+
+    // 일정 시간 후 강조 표시 제거
+    setTimeout(() => {
+      spotElement.classList.remove('highlight');
+    }, 2000);
+  }
+};
 
     const zoomIn = () => {
       if (map) {
@@ -789,3 +808,9 @@ export default {
   }
 };
 </script>
+<style scoped>
+.highlight {
+  background-color: #ffeb3b;
+  transition: background-color 0.3s ease;
+}
+</style>
