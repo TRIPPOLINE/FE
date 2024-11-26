@@ -3,14 +3,14 @@
     <!-- 검색 및 정렬 옵션 -->
     <div class="mb-8 flex flex-wrap justify-between items-center">
       <div class="flex flex-wrap space-x-2 space-y-2 md:space-y-0">
-        <input v-model="searchKeyword" placeholder="검색어 입력" class="border p-2 rounded">
-        <select v-model="searchType" class="border p-2 rounded">
-          <option value="all">제목과 내용</option>
-          <option value="title">제목</option>
-          <option value="content">내용</option>
-        </select>
-        <button @click="searchReviews" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">검색</button>
-      </div>
+          <input v-model="searchKeyword" placeholder="검색어 입력" class="border p-2 rounded">
+          <select v-model="searchType" class="border p-2 rounded">
+            <option value="all">제목과 내용</option>
+            <option value="title">제목</option>
+            <option value="content">내용</option>
+          </select>
+          <button @click="searchReviews" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">검색</button>
+        </div>
       <div class="flex border-b">
         <button
           @click="changeSortBy('likes')"
@@ -90,7 +90,7 @@
                 <p class="text-gray-500">{{ formatDate(selectedReview.writeAt) }}</p>
               </div>
             </div>
-            
+
             <h2 class="text-2xl font-bold mb-4">{{ selectedReview.title }}</h2>
             <p class="mb-4">{{ selectedReview.content }}</p>
             <div class="flex items-center justify-between mb-4">
@@ -102,11 +102,11 @@
               <p class="flex items-center"><i class="fas fa-map-marker-alt mr-2 text-red-500"></i> {{ selectedReview.spotTitle }} </p>
               <p class="mt-2">{{ selectedReview.spotAddr1 }}</p>
             </div>
-            <div v-if="selectedReview.photoUrls && selectedReview.photoUrls.length > 0" 
+            <div v-if="selectedReview.photoUrls && selectedReview.photoUrls.length > 0"
                 class="grid grid-cols-2 gap-4 mb-4">
-              <img v-for="(photo, index) in selectedReview.photoUrls" 
+              <img v-for="(photo, index) in selectedReview.photoUrls"
                   :key="index"
-                  :src="photo" 
+                  :src="photo"
                   :alt="selectedReview.title"
                   class="w-full h-48 object-cover rounded">
             </div>
@@ -160,9 +160,25 @@ const loadMoreReviews = async () => {
   isLoading.value = true;
   currentPage.value++;
   try {
-    const response = await api.get('/review', {
-      params: { sortBy: sortBy.value, page: currentPage.value, size: pageSize }
-    });
+    let response;
+    if (searchKeyword.value) {
+      response = await api.get('/review/search', {
+        params: {
+          keyword: searchKeyword.value,
+          searchType: searchType.value,
+          page: currentPage.value,
+          size: pageSize
+        }
+      });
+    } else {
+      response = await api.get('/review', {
+        params: {
+          sortBy: sortBy.value,
+          page: currentPage.value,
+          size: pageSize
+        }
+      });
+    }
     const newReviews = response.data.map(review => ({ ...review, isLiked: false }));
     reviews.value = [...reviews.value, ...newReviews];
     if (newReviews.length < pageSize) {
@@ -187,13 +203,26 @@ const loadReviews = async () => {
 };
 
 const searchReviews = async () => {
+  currentPage.value = 1;
+  hasMore.value = true;
+  isLoading.value = true;
   try {
     const response = await api.get('/review/search', {
-      params: { keyword: searchKeyword.value, searchType: searchType.value, page: currentPage.value, size: pageSize }
+      params: {
+        keyword: searchKeyword.value,
+        searchType: searchType.value,
+        page: currentPage.value,
+        size: pageSize
+      }
     });
     reviews.value = response.data.map(review => ({ ...review, isLiked: false }));
+    if (response.data.length < pageSize) {
+      hasMore.value = false;
+    }
   } catch (error) {
     console.error('리뷰 검색 실패:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
