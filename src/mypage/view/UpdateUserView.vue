@@ -23,9 +23,11 @@ const fetchUserInfo = async () => {
     const token = localStorage.getItem('accessToken');
     if (token) {
       const decoded = jwtDecode(token);
+      console.log(decoded);
       await mypageStore.fetchUserInfo(decoded.userId);
       userForm.value = { ...mypageStore.user };
     }
+    
   } catch (error) {
     console.error('사용자 정보 조회 실패:', error);
     alert('사용자 정보를 불러오는데 실패했습니다.');

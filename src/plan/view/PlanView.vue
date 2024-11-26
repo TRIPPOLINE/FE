@@ -1,22 +1,26 @@
 <template>
   <div class="container mx-auto p-4 mt-16">
-    <div class="flex justify-between items-center mb-4">
-      <h1 class="text-2xl font-bold">여행 계획</h1>
+    <div class="flex justify-between items-start mb-4">
+      <div class="flex items-start gap-4">
+        <h1 class="text-2xl font-bold">여행 계획</h1>
+        <div class="relative" style="margin-left: 200px;">
+          <button @click="goToSearch"
+            class="px-4 py-2 text-indigo-600 rounded-md transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+          </button>
+        </div>
+      </div>
 
       <div class="flex gap-2">
         <button @click="getOptimizedRoute"
-          class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors">
-          추천 경로
-        </button>
-        <button @click="getRecommendations"
-          class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-          :disabled="!planStore.selectedSpots.length">
-          주변 명소 추천
-        </button>
-        <button @click="goToSearch"
-          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-          여행지 추가하기
-        </button>
+  class="px-4 py-2  text-yellow-400 rounded-md transition-colors border border-yellow-400 hover:bg-yellow-400 hover:text-white">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+</svg>
+
+</button>
 
       </div>
     </div>
@@ -34,8 +38,10 @@
                   <p class="text-sm text-gray-600">{{ element.frontAddress }}</p>
                 </div>
                 <button @click="removeSpot(element.spotId)"
-                  class="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600">
-                  삭제
+                  class="px-3 py-1  text-red-500 rounded-md">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
                 </button>
               </div>
             </div>
@@ -61,7 +67,9 @@
               <span class="beta-tag">Beta</span>
             </div>
             <button @click="closeChat" class="text-gray-500 hover:text-gray-700">
-              ✕
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
             </button>
           </div>
           <div class="flex-1 overflow-y-auto p-4" ref="chatContainer">
@@ -82,14 +90,32 @@
 
     <!-- 하단 버튼 -->
 
-    <div class="mt-6 flex justify-end space-x-4">
-      <button @click="deleteCurrentPlan"
-        class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">계획 삭제</button>
-      <button @click="savePlan"
-        class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-        계획 완료
-      </button>
-    </div>
+    <div class="fixed bottom-0 right-[50px] p-6 flex justify-end space-y-4">
+  <!-- 체크와 x 버튼을 감싸는 div -->
+  <div class="flex justify-start space-x-4 mb-4 mr-[100px]">
+    <button @click="deleteCurrentPlan"
+      class="px-4 py-2 text-red-500 rounded-full hover:bg-red-700 hover:text-white transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
+    </button>
+    <button @click="savePlan"
+      class="px-6 py-3 text-green-600 rounded-full hover:bg-green-600 hover:text-white transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- 챗 버튼을 위한 별도의 div -->
+  <div class="flex justify-end">
+    <button @click="getRecommendations"
+      class="px-4 py-2 text-black rounded-full transition-colors "
+      :disabled="!planStore.selectedSpots.length">
+      <img :src="chatbot" class="size-12" alt="chat icon">
+    </button>
+  </div>
+</div>
   </div>
 </template>
 
@@ -118,6 +144,7 @@ export default {
     const polyline = ref(null);
     const kakaoApiKey = '40b33645cf352fca947afb475d364b6b';
     const infoWindow = ref(null);
+    const chatbot = '/src/assets/chatbot.png';
 
     const getOptimizedRoute = async () => {
       if (planStore.selectedSpots.length < 2) {
@@ -259,7 +286,7 @@ export default {
       polyline.value = new window.kakao.maps.Polyline({
         path: path,
         strokeWeight: 5,
-        strokeColor: '#3B82F6',
+        strokeColor: '#FF4500',
         strokeOpacity: 0.8,
         strokeStyle: 'solid',
         strokeLineCap: 'round',
@@ -276,12 +303,22 @@ export default {
       // 말풍선 내용 생성
       const { duration, distance } = data.routes[0].summary;
       const content = `
-    <div style="padding:10px; background:white; border-radius:5px;">
-      <h4 style="margin-bottom:5px;">경로 정보</h4>
-      <p>총 거리: ${(distance / 1000).toFixed(1)} km</p>
-      <p>예상 소요 시간: ${Math.round(duration / 60)} 분</p>
+  <div style="padding:15px; background:white; border-radius:15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); min-width: 200px; border: 2px solid;">
+    <h4 style="margin:0 0 10px 0; color:#4B5563; font-size:16px; font-weight:600; border-bottom: 1px solid #E5E7EB; padding-bottom:8px;">
+      🚗 경로 정보
+    </h4>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <p style="margin:0; color:#6B7280; font-size:14px;">
+        <span style="color:#3B82F6; font-weight:600;">총 거리:</span> 
+        ${(distance / 1000).toFixed(1)} km
+      </p>
+      <p style="margin:0; color:#6B7280; font-size:14px;">
+        <span style="color:#3B82F6; font-weight:600;">예상 소요 시간:</span> 
+        ${Math.round(duration / 60)} 분
+      </p>
     </div>
-  `;
+  </div>
+`;
 
       // 인포윈도우 생성 및 표시
       createInfoWindow(content, path[Math.floor(path.length / 2)]);
@@ -367,57 +404,64 @@ export default {
     };
 
     const updateMarkers = () => {
-      if (!map.value || !window.kakao) return;
+  if (!map.value || !window.kakao) return;
+  
+  // 기존 마커와 오버레이 제거
+  markers.value.forEach(marker => marker.setMap(null));
+  markers.value = [];
+  
+  // 기존 Polyline 제거
+  if (polyline.value) {
+    polyline.value.setMap(null);
+  }
+  
+  const path = [];
+  
+  planStore.selectedSpots.forEach((spot, index) => {
+    const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
+    path.push(position);
+    
+    // 마커 생성
+    const marker = new window.kakao.maps.Marker({
+      position: position,
+      map: map.value
+    });
+    
+    // 인덱스를 표시할 커스텀 오버레이 생성
+    const content = `
+      <div class="marker-label bg-white px-2 py-1 rounded-full border-2 border-blue-500 font-bold text-blue-500">
+        ${index + 1}
+      </div>
+    `;
+    
+    const customOverlay = new window.kakao.maps.CustomOverlay({
+      position: position,
+      content: content,
+      map: map.value,
+      yAnchor: 1.4
+    });
+    
+    markers.value.push(marker);
+    markers.value.push(customOverlay);
+  });
 
-      // 기존 마커와 오버레이 제거
-      markers.value.forEach(marker => marker.setMap(null));
-      markers.value = [];
+  // Polyline 그리기
+  polyline.value = new window.kakao.maps.Polyline({
+    path: path,
+    strokeWeight: 3,
+    strokeColor: '#db4040',
+    strokeOpacity: 0.7,
+    strokeStyle: 'solid'
+  });
+  
+  polyline.value.setMap(map.value);
 
-      // 기존 Polyline 제거
-      if (polyline.value) {
-        polyline.value.setMap(null);
-      }
-
-      const path = [];
-
-      planStore.selectedSpots.forEach((spot, index) => {
-        const position = new window.kakao.maps.LatLng(spot.latitude, spot.longitude);
-        path.push(position);
-
-        const marker = new window.kakao.maps.Marker({
-          position: position,
-          map: map.value
-        });
-
-        const customOverlay = new window.kakao.maps.CustomOverlay({
-          position: position,
-          //content: `< div class= "marker-label" > ${index + 1}</div > `,
-
-          map: map.value,
-          yAnchor: 0
-        });
-
-        markers.value.push(marker);
-        markers.value.push(customOverlay);
-      });
-
-      // Polyline 그리기
-      polyline.value = new window.kakao.maps.Polyline({
-        path: path,
-        strokeWeight: 3,
-        strokeColor: '#db4040',
-        strokeOpacity: 0.7,
-        strokeStyle: 'solid'
-      });
-
-      polyline.value.setMap(map.value);
-      if (path.length > 0) {
-        const bounds = new window.kakao.maps.LatLngBounds();
-        path.forEach(position => bounds.extend(position));
-        map.value.setBounds(bounds);
-      }
-    };
-
+  if (path.length > 0) {
+    const bounds = new window.kakao.maps.LatLngBounds();
+    path.forEach(position => bounds.extend(position));
+    map.value.setBounds(bounds);
+  }
+};
     onMounted(() => {
       const script = document.createElement('script');
       script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=2bd4f83bc7309d38194a5a7f96c884e0&autoload=false`;
@@ -512,7 +556,8 @@ export default {
       chatContainer,
       deleteCurrentPlan,
       getOptimizedRoute,
-      drawOptimizedRoute
+      drawOptimizedRoute,
+      chatbot
     };
   }
 };

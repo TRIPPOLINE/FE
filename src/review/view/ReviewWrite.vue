@@ -57,9 +57,34 @@
         <div class="mb-4">
     <EditableStarRating v-model="reviewScore" />
   </div>
-        <div class="mb-4">
+        <!-- <div class="mb-4">
           <input type="file" multiple @change="handleFileUpload" accept=".jpg,.jpeg,.png"/>
-        </div>
+        </div> -->
+        <!-- 파일 업로드 부분 수정 -->
+<div class="mb-4">
+  <label class="block text-gray-700 text-sm font-bold mb-2">
+    사진 첨부 (여러 장 선택 가능)
+  </label>
+  <input 
+    type="file" 
+    multiple 
+    @change="handleFileUpload" 
+    accept="image/*"
+    class="w-full p-2 border rounded-md"
+  />
+  <!-- 선택된 파일 미리보기 -->
+  <div v-if="previewUrls.length > 0" class="grid grid-cols-3 gap-4 mt-4">
+    <div v-for="(url, index) in previewUrls" :key="index" class="relative">
+      <img :src="url" class="w-full h-32 object-cover rounded-md">
+      <button 
+        @click="removePhoto(index)" 
+        class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
+      >
+        ×
+      </button>
+    </div>
+  </div>
+</div>
         <button type="submit" class="bg-green-500 text-white p-2 rounded-md">리뷰 저장</button>
       </form>
     </div>
@@ -92,8 +117,9 @@ const authStore = useAuthStore();
   const reviewTitle = ref('');
 const reviewContent = ref('');
 const reviewScore = ref('');
-  let photos = [];
-  
+  //let photos = [];
+  const photos = ref([]);
+const previewUrls = ref([]);
   const handleSidoChange = async () => {
     sigungus.value = await spotStore.fetchSigungus(selectedSido.value);
   };
@@ -118,49 +144,76 @@ const reviewScore = ref('');
       console.log(`선택한 여행지`,spot);
   };
   
+  // const handleFileUpload = (event) => {
+  //   photos = Array.from(event.target.files);
+  // };
   const handleFileUpload = (event) => {
-    photos = Array.from(event.target.files);
-  };
+  const newFiles = Array.from(event.target.files);
   
+  // 기존 파일들과 새로운 파일들을 합침
+  photos.value = [...photos.value, ...newFiles];
+  
+  // 새로운 파일들의 미리보기 URL 생성
+  const newPreviewUrls = newFiles.map(file => URL.createObjectURL(file));
+  
+  // 기존 미리보기와 새로운 미리보기를 합침
+  previewUrls.value = [...previewUrls.value, ...newPreviewUrls];
+};
+  // 사진 삭제 함수 추가
+const removePhoto = (index) => {
+  photos.value = photos.value.filter((_, i) => i !== index);
+  URL.revokeObjectURL(previewUrls.value[index]);
+  previewUrls.value = previewUrls.value.filter((_, i) => i !== index);
+};
+
   const submitReview = async () => {
-  if (!selectedSpot.value) {
-    alert('여행지를 선택해주세요.');
-    return;
-  }
+    if (!selectedSpot.value) {
+      alert('여행지를 선택해주세요.');
+      return;
+    }
 
-  if (!reviewScore.value) {
-    alert('평점을 선택해주세요.');
-    return;
-  }
+    if (!reviewScore.value) {
+      alert('평점을 선택해주세요.');
+      return;
+    }
 
-  const userId = authStore.userId; // Assuming userId is stored here
+    const userId = authStore.userId; // Assuming userId is stored here
 
-  // Log the userId to verify
-  console.log('User ID:', userId);
+    // Log the userId to verify
+    console.log('User ID:', userId);
 
-  const reviewData = {
-    userId: userId,
-    spotId: selectedSpot.value.spotId,
-    title: reviewTitle.value,
-    content: reviewContent.value,
-    score: parseFloat(reviewScore.value)
-      };
-      console.log(reviewData);
+    const reviewData = {
+      userId: userId,
+      spotId: selectedSpot.value.spotId,
+      title: reviewTitle.value,
+      content: reviewContent.value,
+      score: parseFloat(reviewScore.value)
+    };
+    console.log(reviewData);
 
-      const formData = new FormData();
+    const formData = new FormData();
     formData.append('requestReviewJson', JSON.stringify(reviewData));
 
-    photos.forEach((photo, index) => {
-  formData.append('photos', photo);
-  console.log(`File ${index + 1}:`, photo.name, photo.size, photo.type);
-});
+  //     photos.forEach((photo, index) => {
+  //   formData.append('photos', photo);
+  //   console.log(`File ${index + 1}:`, photo.name, photo.size, photo.type);
+      // });
+    //   photos.value.forEach((photo, index) => {
+    //   formData.append('photos', photo);
+    //   console.log(`File ${index + 1}:`, photo.name, photo.size, photo.type);
+    // });
+// 여러 파일을 각각 append
+if (photos.value && photos.value.length > 0) {
+    photos.value.forEach(photo => {
+      formData.append('photos', photo);
+    });
+  }
 
+      await reviewStore.writeReview(formData);
 
-    await reviewStore.writeReview(formData);
-
-    alert('리뷰가 저장되었습니다.');
-    router.push('/review');
-};
+      alert('리뷰가 저장되었습니다.');
+      router.push('/review');
+  };
   
   // Fetch initial data
   (async () => {
